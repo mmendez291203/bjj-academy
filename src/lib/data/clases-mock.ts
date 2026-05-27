@@ -93,7 +93,7 @@ export const instructoresMock = [
     especialidad: "BJJ Gi · No-Gi",
     bio: "Instructor principal de RUNAJERABJJ. Cinturón café con sólida formación en Gi y No-Gi.",
     foto: "",
-    instagram: "",
+    instagram: "@runajerabjj",
   },
 ];
 

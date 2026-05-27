@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Shield, MapPin, Phone, Mail } from "lucide-react";
-import { InstagramIcon, YoutubeIcon, FacebookIcon } from "@/components/ui/social-icons";
+import { InstagramIcon, YoutubeIcon } from "@/components/ui/social-icons";
 
 export default function Footer() {
   const academy = {
@@ -27,14 +27,11 @@ export default function Footer() {
             </p>
             {/* Redes sociales */}
             <div className="flex gap-4 mt-5">
-              <a href="#" aria-label="Instagram" className="hover:text-white transition-colors">
+              <a href="https://www.instagram.com/runajerabjj/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-pink-400 transition-colors">
                 <InstagramIcon className="w-5 h-5" />
               </a>
-              <a href="#" aria-label="YouTube" className="hover:text-white transition-colors">
+              <a href="https://www.youtube.com/@RunaJerabjj" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="hover:text-red-500 transition-colors">
                 <YoutubeIcon className="w-5 h-5" />
-              </a>
-              <a href="#" aria-label="Facebook" className="hover:text-white transition-colors">
-                <FacebookIcon className="w-5 h-5" />
               </a>
             </div>
           </div>
