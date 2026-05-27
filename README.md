@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🥋 Academia BJJ — Web App
 
-## Getting Started
+Sitio web completo para academia de Jiu-Jitsu Brasileño construido con **Next.js 14**, **TypeScript**, **Tailwind CSS** y desplegado en **Azure Static Web Apps** con CI/CD automático desde GitHub.
 
-First, run the development server:
+> **Portafolio project** — Demuestra integración full-stack de Next.js con servicios cloud de Azure.
+
+---
+
+## 🛠️ Stack Tecnológico
+
+| Capa              | Tecnología                           |
+|-------------------|--------------------------------------|
+| Frontend          | Next.js 14 (App Router) + TypeScript |
+| Estilos           | Tailwind CSS + CVA                   |
+| Animaciones       | Framer Motion                        |
+| Autenticación     | NextAuth.js v5 (Auth.js)             |
+| Validación        | Zod + React Hook Form                |
+| Base de datos     | Azure Cosmos DB (NoSQL)              |
+| Archivos/Media    | Azure Blob Storage                   |
+| Hosting           | Azure Static Web Apps                |
+| CI/CD             | GitHub Actions                       |
+
+---
+
+## 🚀 Inicio Rápido
 
 ```bash
+git clone https://github.com/TU_USUARIO/bjj-academy.git
+cd bjj-academy
+npm install --legacy-peer-deps
+cp .env.example .env.local
+# Edita .env.local con tus credenciales de Azure
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# → http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Estructura
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── page.tsx            # Landing page
+│   ├── clases/             # Horario de clases
+│   ├── inscripciones/      # Formulario de prueba gratis
+│   ├── blog/               # Blog de BJJ
+│   ├── dashboard/          # Portal del alumno (protegido)
+│   └── api/                # API Routes serverless
+├── components/
+│   ├── ui/                 # Button, Badge
+│   ├── layout/             # Navbar, Footer
+│   ├── landing/            # Hero, Features, Instructors, CTA
+│   └── inscripciones/      # Formulario con validación Zod
+├── lib/
+│   ├── azure/cosmos.ts     # CRUD genérico Cosmos DB
+│   ├── azure/blob.ts       # Upload/Download Blob Storage
+│   ├── auth.ts             # NextAuth config
+│   └── utils.ts            # Helpers
+├── types/index.ts          # Tipos del dominio BJJ
+└── middleware.ts           # Protección de rutas (Edge)
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## ☁️ Azure Services
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Cosmos DB** — alumnos, clases, inscripciones, posts
+- **Blob Storage** — imágenes y media
+- **Static Web Apps** — hosting + SSL + CDN global + CI/CD
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 👨‍💻 Autor
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Mario Méndez** — Proyecto de portafolio con Next.js + Azure Cloud.
