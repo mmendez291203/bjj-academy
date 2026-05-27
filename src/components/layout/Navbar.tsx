@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -20,15 +20,10 @@ const navLinks = [
 
 export default function Navbar() {
   const pathname        = usePathname();
-  const router          = useRouter();
   const [open, setOpen] = useState(false);
   const { data: session, status } = useSession();
 
   const tieneSesion = status === "authenticated";
-
-  function handleSignOut() {
-    window.location.href = "/api/signout";
-  }
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5">
@@ -76,9 +71,9 @@ export default function Navbar() {
                 )}
                 {session?.user?.name?.split(" ")[0] ?? "Mi Portal"}
               </Link>
-              <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-gray-400 hover:text-white">
+              <a href="/api/signout" className="text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5 rounded-md hover:bg-white/5">
                 Salir
-              </Button>
+              </a>
             </>
           ) : (
             <>
@@ -124,9 +119,9 @@ export default function Navbar() {
                 <Link href="/dashboard" onClick={() => setOpen(false)}>
                   <Button variant="outline" className="w-full">Mi Portal</Button>
                 </Link>
-                <Button className="w-full bg-red-600 hover:bg-red-700" onClick={() => { setOpen(false); handleSignOut(); }}>
+                <a href="/api/signout" className="w-full text-center py-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium transition-colors">
                   Cerrar Sesión
-                </Button>
+                </a>
               </>
             ) : (
               <>

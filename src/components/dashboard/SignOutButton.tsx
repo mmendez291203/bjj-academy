@@ -1,25 +1,15 @@
 "use client";
 
 import { LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 
 export default function SignOutButton() {
-  const router = useRouter();
-
-  function handleSignOut() {
-    window.location.href = "/api/signout";
-  }
-
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={handleSignOut}
-      className="text-gray-400 hover:text-white gap-2"
+    <a
+      href="/api/signout"
+      className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5 rounded-md hover:bg-white/5"
     >
       <LogOut className="w-4 h-4" />
       Cerrar sesión
-    </Button>
+    </a>
   );
 }
