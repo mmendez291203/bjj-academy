@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { colorCinturon, capitalizar, formatFecha } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import SignOutButton from "@/components/dashboard/SignOutButton";
 
 export const metadata: Metadata = {
   title: "Mi Dashboard",
@@ -34,11 +35,14 @@ const alumnoDemo = {
   membresia:    "mensual" as const,
 };
 
-// ─── Próximas clases demo ─────────────────────────────────────────────────────
+// ─── Próximas clases reales RUNAJERABJJ ──────────────────────────────────────
+const INSTRUCTOR = "Carlos A. Donado";
 const proximasClases = [
-  { dia: "Hoy",     hora: "19:00", nombre: "BJJ Avanzado",    instructor: "Prof. Carlos" },
-  { dia: "Mañana",  hora: "07:00", nombre: "BJJ Fundamentals", instructor: "Prof. Carlos" },
-  { dia: "Miércoles", hora: "20:30", nombre: "No-Gi Grappling", instructor: "Coach Ana"  },
+  { dia: "Lunes",    hora: "7:30 PM", nombre: "BJJ Gi",              instructor: INSTRUCTOR },
+  { dia: "Martes",   hora: "7:30 PM", nombre: "BJJ No-Gi",           instructor: INSTRUCTOR },
+  { dia: "Miércoles",hora: "7:30 PM", nombre: "BJJ Gi",              instructor: INSTRUCTOR },
+  { dia: "Jueves",   hora: "7:30 PM", nombre: "BJJ No-Gi",           instructor: INSTRUCTOR },
+  { dia: "Viernes",  hora: "7:30 PM", nombre: "Open Mat — Gi/No-Gi", instructor: INSTRUCTOR },
 ];
 
 // ─── Stats cards ─────────────────────────────────────────────────────────────
@@ -76,30 +80,34 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* ─── Header ────────────────────────────────────────────────── */}
-        <div className="flex items-center gap-4 mb-10">
-          {/* Avatar */}
-          <div className="w-16 h-16 rounded-full bg-gray-900 border border-white/10 flex items-center justify-center text-3xl">
-            🥋
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-white">
-              ¡Hola, {nombre}! 👋
-            </h1>
-            <div className="flex items-center gap-2 mt-1">
-              <span
-                className={cn(
-                  "text-xs font-bold px-2 py-0.5 rounded-full",
-                  colorCinturon(cinturon)
-                )}
-              >
-                Cinturón {capitalizar(cinturon)}
-                {galones > 0 && ` · ${galones} galón${galones > 1 ? "es" : ""}`}
-              </span>
-              <span className="text-xs text-gray-500">
-                Desde {formatFecha(fechaInicio)}
-              </span>
+        <div className="flex items-center justify-between gap-4 mb-10">
+          <div className="flex items-center gap-4">
+            {/* Avatar */}
+            <div className="w-16 h-16 rounded-full bg-gray-900 border border-white/10 flex items-center justify-center text-3xl">
+              🥋
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-white">
+                ¡Hola, {nombre}! 👋
+              </h1>
+              <div className="flex items-center gap-2 mt-1">
+                <span
+                  className={cn(
+                    "text-xs font-bold px-2 py-0.5 rounded-full",
+                    colorCinturon(cinturon)
+                  )}
+                >
+                  Cinturón {capitalizar(cinturon)}
+                  {galones > 0 && ` · ${galones} galón${galones > 1 ? "es" : ""}`}
+                </span>
+                <span className="text-xs text-gray-500">
+                  Desde {formatFecha(fechaInicio)}
+                </span>
+              </div>
             </div>
           </div>
+          {/* Botón cerrar sesión */}
+          <SignOutButton />
         </div>
 
         {/* ─── Stats ─────────────────────────────────────────────────── */}
