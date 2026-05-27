@@ -10,8 +10,12 @@ const RUTAS_PUBLICAS_SOLO = ["/login"];
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // NextAuth guarda la sesión en una de estas cookies
+  // NextAuth v5 (Auth.js) usa "authjs.session-token"
+  // NextAuth v4 usaba "next-auth.session-token"
+  // Azure sirve HTTPS → prefijo __Secure-
   const sessionCookie =
+    request.cookies.get("authjs.session-token") ??
+    request.cookies.get("__Secure-authjs.session-token") ??
     request.cookies.get("next-auth.session-token") ??
     request.cookies.get("__Secure-next-auth.session-token");
 
