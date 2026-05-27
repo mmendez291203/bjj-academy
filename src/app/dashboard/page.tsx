@@ -1,11 +1,12 @@
 /**
  * Dashboard del alumno — Ruta protegida
- *
- * En producción, usa el middleware de Next.js para redirigir si no hay sesión.
- * Por ahora mostramos datos de demo.
+ * Lee el nombre y email del usuario desde la sesión real de Google/NextAuth.
+ * Los stats (cinturón, clases, pagos) son placeholders hasta conectar Cosmos DB.
  */
 
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
 import {
   Trophy,
   Calendar,
@@ -13,7 +14,6 @@ import {
   TrendingUp,
   Clock,
 } from "lucide-react";
-import { colorCinturon, capitalizar, formatFecha } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import SignOutButton from "@/components/dashboard/SignOutButton";
 
@@ -22,30 +22,17 @@ export const metadata: Metadata = {
   description: "Portal del alumno — progreso, asistencia y pagos.",
 };
 
-// ─── Datos demo del alumno ────────────────────────────────────────────────────
-const alumnoDemo = {
-  nombre:       "Mario",
-  apellido:     "Méndez",
-  cinturon:     "azul" as const,
-  galones:      2,
-  fechaInicio:  "2023-03-15",
-  clasesEsteMes: 12,
-  totalClases:  87,
-  proximoPago:  "2026-06-01",
-  membresia:    "mensual" as const,
-};
-
 // ─── Próximas clases reales RUNAJERABJJ ──────────────────────────────────────
 const INSTRUCTOR = "Carlos A. Donado";
 const proximasClases = [
-  { dia: "Lunes",    hora: "7:30 PM", nombre: "BJJ Gi",              instructor: INSTRUCTOR },
-  { dia: "Martes",   hora: "7:30 PM", nombre: "BJJ No-Gi",           instructor: INSTRUCTOR },
-  { dia: "Miércoles",hora: "7:30 PM", nombre: "BJJ Gi",              instructor: INSTRUCTOR },
-  { dia: "Jueves",   hora: "7:30 PM", nombre: "BJJ No-Gi",           instructor: INSTRUCTOR },
-  { dia: "Viernes",  hora: "7:30 PM", nombre: "Open Mat — Gi/No-Gi", instructor: INSTRUCTOR },
+  { dia: "Lunes",     hora: "7:30 PM", nombre: "BJJ Gi",               instructor: INSTRUCTOR },
+  { dia: "Martes",    hora: "7:30 PM", nombre: "BJJ No-Gi",            instructor: INSTRUCTOR },
+  { dia: "Miércoles", hora: "7:30 PM", nombre: "BJJ Gi",               instructor: INSTRUCTOR },
+  { dia: "Jueves",    hora: "7:30 PM", nombre: "BJJ No-Gi",            instructor: INSTRUCTOR },
+  { dia: "Viernes",   hora: "7:30 PM", nombre: "Open Mat — Gi/No-Gi",  instructor: INSTRUCTOR },
 ];
 
-// ─── Stats cards ─────────────────────────────────────────────────────────────
+// ─── Stat card ────────────────────────────────────────────────────────────────
 function StatCard({
   icon: Icon,
   label,
@@ -72,157 +59,90 @@ function StatCard({
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
-export default function DashboardPage() {
-  const { nombre, cinturon, galones, fechaInicio, clasesEsteMes, totalClases } = alumnoDemo;
+export default async function DashboardPage() {
+  // Leer sesión real
+  const session = await auth();
+  if (!session?.user) redirect("/login");
+
+  const nombre = session.user.name?.split(" ")[0] ?? "Alumno";
+  const email  = session.user.email ?? "";
+  const avatar = session.user.image;
 
   return (
     <div className="min-h-screen bg-black pt-24 pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* ─── Header ────────────────────────────────────────────────── */}
+        {/* ─── Header ──────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between gap-4 mb-10">
           <div className="flex items-center gap-4">
-            {/* Avatar */}
-            <div className="w-16 h-16 rounded-full bg-gray-900 border border-white/10 flex items-center justify-center text-3xl">
-              🥋
-            </div>
+            {/* Avatar de Google o emoji */}
+            {avatar ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={avatar}
+                alt={nombre}
+                className="w-16 h-16 rounded-full border border-white/10"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-gray-900 border border-white/10 flex items-center justify-center text-3xl">
+                🥋
+              </div>
+            )}
             <div>
               <h1 className="text-2xl font-bold text-white">
                 ¡Hola, {nombre}! 👋
               </h1>
-              <div className="flex items-center gap-2 mt-1">
-                <span
-                  className={cn(
-                    "text-xs font-bold px-2 py-0.5 rounded-full",
-                    colorCinturon(cinturon)
-                  )}
-                >
-                  Cinturón {capitalizar(cinturon)}
-                  {galones > 0 && ` · ${galones} galón${galones > 1 ? "es" : ""}`}
-                </span>
-                <span className="text-xs text-gray-500">
-                  Desde {formatFecha(fechaInicio)}
-                </span>
-              </div>
+              <p className="text-sm text-gray-500 mt-1">{email}</p>
+              {/* Cinturón — placeholder hasta tener Cosmos DB */}
+              <span className="inline-block mt-1 text-xs font-bold px-2 py-0.5 rounded-full bg-white text-black">
+                Cinturón Blanco
+              </span>
             </div>
           </div>
-          {/* Botón cerrar sesión */}
           <SignOutButton />
         </div>
 
-        {/* ─── Stats ─────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard
-            icon={Calendar}
-            label="Clases este mes"
-            value={clasesEsteMes}
-            sub="Meta: 16 clases"
-            color="text-blue-400"
-          />
-          <StatCard
-            icon={TrendingUp}
-            label="Total de clases"
-            value={totalClases}
-            sub="Histórico"
-            color="text-green-400"
-          />
-          <StatCard
-            icon={Trophy}
-            label="Próximo nivel"
-            value="Morado"
-            sub="~300 clases estimado"
-            color="text-purple-400"
-          />
-          <StatCard
-            icon={CreditCard}
-            label="Próximo pago"
-            value={formatFecha(alumnoDemo.proximoPago)}
-            sub="Membresía mensual"
-            color="text-yellow-400"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-          {/* ─── Progreso de cinturón ───────────────────────────────── */}
-          <div className="lg:col-span-2 rounded-xl border border-white/5 bg-gray-950 p-6">
-            <h2 className="text-lg font-bold text-white mb-5">
-              🎯 Progreso hacia cinturón morado
-            </h2>
-
-            {/* Barra de progreso */}
-            <div className="mb-6">
-              <div className="flex justify-between text-sm text-gray-400 mb-2">
-                <span>Clases completadas: {totalClases}</span>
-                <span>Meta estimada: ~300</span>
-              </div>
-              <div className="h-3 bg-gray-800 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-blue-600 to-purple-600 rounded-full transition-all"
-                  style={{ width: `${Math.min((totalClases / 300) * 100, 100)}%` }}
-                />
-              </div>
-              <p className="text-xs text-gray-500 mt-2">
-                {Math.round((totalClases / 300) * 100)}% completado
-              </p>
-            </div>
-
-            {/* Línea de cinturones */}
-            <div className="flex items-center justify-between">
-              {[
-                { nivel: "Blanco",  color: "bg-white",     completado: true  },
-                { nivel: "Azul",    color: "bg-blue-600",  completado: true  },
-                { nivel: "Morado",  color: "bg-purple-600",completado: false },
-                { nivel: "Café",    color: "bg-amber-800", completado: false },
-                { nivel: "Negro",   color: "bg-gray-900 border border-white/20", completado: false },
-              ].map((c, i, arr) => (
-                <div key={c.nivel} className="flex flex-col items-center gap-1.5">
-                  <div
-                    className={cn(
-                      "w-8 h-8 rounded-full transition-all",
-                      c.color,
-                      c.completado ? "ring-2 ring-white/30 scale-110" : "opacity-40"
-                    )}
-                  />
-                  <span className="text-xs text-gray-500">{c.nivel}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* ─── Próximas clases ────────────────────────────────────── */}
-          <div className="rounded-xl border border-white/5 bg-gray-950 p-6">
-            <h2 className="text-lg font-bold text-white mb-5">
-              📅 Próximas clases
-            </h2>
-            <div className="space-y-3">
-              {proximasClases.map((c, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-3 rounded-lg border border-white/5 bg-black/40 p-3"
-                >
-                  <div className="w-10 h-10 rounded-lg bg-red-900/30 flex items-center justify-center shrink-0">
-                    <Clock className="w-4 h-4 text-red-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">{c.nombre}</p>
-                    <p className="text-xs text-gray-500">
-                      {c.dia} · {c.hora} · {c.instructor}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ─── Nota de producción ─────────────────────────────────────────── */}
-        <div className="mt-8 rounded-lg border border-yellow-900/30 bg-yellow-950/20 px-4 py-3">
-          <p className="text-xs text-yellow-400">
-            <strong>💡 Nota de desarrollo:</strong> Esta página muestra datos de demostración.
-            En producción, los datos vendrán de Azure Cosmos DB usando la sesión del alumno autenticado.
+        {/* ─── Aviso de datos placeholder ──────────────────────────────── */}
+        <div className="mb-6 rounded-lg border border-blue-900/30 bg-blue-950/20 px-4 py-3">
+          <p className="text-xs text-blue-400">
+            <strong>🔧 En construcción:</strong> Tu nombre y foto vienen de Google.
+            Las estadísticas (cinturón, clases, pagos) se conectarán a Cosmos DB próximamente.
           </p>
         </div>
+
+        {/* ─── Stats ───────────────────────────────────────────────────── */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatCard icon={Calendar}   label="Clases este mes" value="—"  sub="Próximamente"       color="text-blue-400"   />
+          <StatCard icon={TrendingUp} label="Total de clases" value="—"  sub="Próximamente"       color="text-green-400"  />
+          <StatCard icon={Trophy}     label="Próximo nivel"   value="—"  sub="Próximamente"       color="text-purple-400" />
+          <StatCard icon={CreditCard} label="Próximo pago"    value="—"  sub="Membresía mensual"  color="text-yellow-400" />
+        </div>
+
+        {/* ─── Próximas clases ─────────────────────────────────────────── */}
+        <div className="rounded-xl border border-white/5 bg-gray-950 p-6">
+          <h2 className="text-lg font-bold text-white mb-5">📅 Horario semanal</h2>
+          <div className="space-y-3">
+            {proximasClases.map((c, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 rounded-lg border border-white/5 bg-black/40 p-3"
+              >
+                <div className="w-10 h-10 rounded-lg bg-red-900/30 flex items-center justify-center shrink-0">
+                  <Clock className="w-4 h-4 text-red-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-white">{c.nombre}</p>
+                  <p className="text-xs text-gray-500">{c.instructor}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-white">{c.hora}</p>
+                  <p className="text-xs text-gray-500">{c.dia}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );
