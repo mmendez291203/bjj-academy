@@ -56,10 +56,8 @@ export async function getContainer(containerId: string): Promise<Container> {
 
 // ─── CRUD genérico ────────────────────────────────────────────────────────────
 
-// Tipo base requerido por el SDK de Cosmos DB
-type CosmosItem = Record<string, unknown>;
-
-export async function findAll<T extends CosmosItem>(containerId: string): Promise<T[]> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function findAll<T = any>(containerId: string): Promise<T[]> {
   const container = await getContainer(containerId);
   const { resources } = await container.items
     .query<T>("SELECT * FROM c ORDER BY c._ts DESC")
@@ -67,29 +65,34 @@ export async function findAll<T extends CosmosItem>(containerId: string): Promis
   return resources;
 }
 
-export async function findById<T extends CosmosItem>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function findById<T = any>(
   containerId: string,
   id: string
 ): Promise<T | null> {
   const container = await getContainer(containerId);
   try {
-    const { resource } = await container.item(id, id).read<T>();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { resource } = await container.item(id, id).read<any>();
     return resource ?? null;
   } catch {
     return null;
   }
 }
 
-export async function createItem<T extends CosmosItem & { id: string }>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function createItem<T extends { id: string } = any>(
   containerId: string,
   item: T
 ): Promise<T> {
   const container = await getContainer(containerId);
-  const { resource } = await container.items.create<T>(item);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { resource } = await container.items.create<any>(item);
   return resource!;
 }
 
-export async function updateItem<T extends CosmosItem & { id: string }>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function updateItem<T extends { id: string } = any>(
   containerId: string,
   id: string,
   item: Partial<T>
@@ -98,7 +101,8 @@ export async function updateItem<T extends CosmosItem & { id: string }>(
   const existing = await findById<T>(containerId, id);
   if (!existing) throw new Error(`Item ${id} no encontrado en ${containerId}`);
   const updated = { ...existing, ...item, updatedAt: new Date().toISOString() } as T;
-  const { resource } = await container.items.upsert<T>(updated);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { resource } = await container.items.upsert<any>(updated);
   return resource!;
 }
 
