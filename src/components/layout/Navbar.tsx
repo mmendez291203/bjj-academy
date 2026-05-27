@@ -2,24 +2,33 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useSession } from "next-auth/react";
 
 const LOGO_URL = "https://bjjacademymedia.blob.core.windows.net/media/1d9186b8-0994-4897-a394-319deeecf77d.png";
 
 const navLinks = [
-  { href: "/",              label: "Inicio"        },
-  { href: "/clases",        label: "Clases"        },
-  { href: "/inscripciones", label: "Inscríbete"    },
-  { href: "/blog",          label: "Blog"          },
+  { href: "/",              label: "Inicio"     },
+  { href: "/clases",        label: "Clases"     },
+  { href: "/inscripciones", label: "Inscríbete" },
+  { href: "/blog",          label: "Blog"       },
 ];
 
 export default function Navbar() {
-  const pathname = usePathname();
-  const [open, setOpen]   = useState(false);
+  const pathname        = usePathname();
+  const router          = useRouter();
+  const [open, setOpen] = useState(false);
+  const { data: session, status } = useSession();
+
+  const tieneSesion = status === "authenticated";
+
+  function handleSignOut() {
+    router.push("/api/signout");
+  }
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5">
@@ -29,14 +38,12 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-2 font-bold text-white text-lg">
           <Image
             src={LOGO_URL}
-            alt={process.env.NEXT_PUBLIC_ACADEMY_NAME ?? "Academia BJJ"}
+            alt={process.env.NEXT_PUBLIC_ACADEMY_NAME ?? "RUNAJERABJJ"}
             width={40}
             height={40}
             className="rounded-md object-contain"
           />
-          <span>
-            {process.env.NEXT_PUBLIC_ACADEMY_NAME ?? "Academia BJJ"}
-          </span>
+          <span>{process.env.NEXT_PUBLIC_ACADEMY_NAME ?? "RUNAJERABJJ"}</span>
         </Link>
 
         {/* ─── Links desktop ────────────────────────────────────────────── */}
@@ -47,9 +54,7 @@ export default function Navbar() {
                 href={link.href}
                 className={cn(
                   "text-sm font-medium transition-colors",
-                  pathname === link.href
-                    ? "text-red-400"
-                    : "text-gray-400 hover:text-white"
+                  pathname === link.href ? "text-red-400" : "text-gray-400 hover:text-white"
                 )}
               >
                 {link.label}
@@ -58,18 +63,33 @@ export default function Navbar() {
           ))}
         </ul>
 
-        {/* ─── CTA + Portal ─────────────────────────────────────────────── */}
+        {/* ─── CTA + Sesión ─────────────────────────────────────────────── */}
         <div className="hidden md:flex items-center gap-3">
-          <Link href="/login">
-            <Button variant="ghost" size="sm">
-              Portal Alumno
-            </Button>
-          </Link>
-          <Link href="/inscripciones">
-            <Button size="sm">
-              Clase Gratis →
-            </Button>
-          </Link>
+          {tieneSesion ? (
+            <>
+              <Link href="/dashboard" className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors">
+                {session?.user?.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={session.user.image} alt="" className="w-7 h-7 rounded-full" />
+                ) : (
+                  <span className="text-lg">🥋</span>
+                )}
+                {session?.user?.name?.split(" ")[0] ?? "Mi Portal"}
+              </Link>
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-gray-400 hover:text-white">
+                Salir
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link href="/login">
+                <Button variant="ghost" size="sm">Iniciar Sesión</Button>
+              </Link>
+              <Link href="/inscripciones">
+                <Button size="sm">Clase Gratis →</Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* ─── Menú mobile ──────────────────────────────────────────────── */}
@@ -99,12 +119,25 @@ export default function Navbar() {
             </Link>
           ))}
           <div className="pt-4 flex flex-col gap-3 border-t border-white/10">
-            <Link href="/login" onClick={() => setOpen(false)}>
-              <Button variant="outline" className="w-full">Portal Alumno</Button>
-            </Link>
-            <Link href="/inscripciones" onClick={() => setOpen(false)}>
-              <Button className="w-full">Clase Gratis →</Button>
-            </Link>
+            {tieneSesion ? (
+              <>
+                <Link href="/dashboard" onClick={() => setOpen(false)}>
+                  <Button variant="outline" className="w-full">Mi Portal</Button>
+                </Link>
+                <Button className="w-full bg-red-600 hover:bg-red-700" onClick={() => { setOpen(false); handleSignOut(); }}>
+                  Cerrar Sesión
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" onClick={() => setOpen(false)}>
+                  <Button variant="outline" className="w-full">Iniciar Sesión</Button>
+                </Link>
+                <Link href="/inscripciones" onClick={() => setOpen(false)}>
+                  <Button className="w-full">Clase Gratis →</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
