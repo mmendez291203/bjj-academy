@@ -5,7 +5,6 @@
  */
 
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import {
   Trophy,
@@ -60,13 +59,11 @@ function StatCard({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default async function DashboardPage() {
-  // Leer sesión real
+  // Leer sesión real (el middleware ya garantiza que existe)
   const session = await auth();
-  if (!session?.user) redirect("/login");
-
-  const nombre = session.user.name?.split(" ")[0] ?? "Alumno";
-  const email  = session.user.email ?? "";
-  const avatar = session.user.image;
+  const nombre = session?.user?.name?.split(" ")[0] ?? "Alumno";
+  const email  = session?.user?.email ?? "";
+  const avatar = session?.user?.image;
 
   return (
     <div className="min-h-screen bg-black pt-24 pb-16">

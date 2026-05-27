@@ -47,11 +47,14 @@ export async function middleware(request: NextRequest) {
 // Configura en qué rutas aplica el middleware
 export const config = {
   matcher: [
+    "/dashboard",
     "/dashboard/:path*",
+    "/progreso",
     "/progreso/:path*",
+    "/pagos",
     "/pagos/:path*",
-    "/galeria/:path*",
     "/galeria",
+    "/galeria/:path*",
     "/login",
   ],
 };
