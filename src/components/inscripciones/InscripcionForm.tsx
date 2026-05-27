@@ -33,7 +33,7 @@ const schema = z.object({
       return !isNaN(n) && n >= 4 && n <= 99;
     }, "La edad debe estar entre 4 y 99 años"),
   experienciaPrevia: z.boolean(),
-  claseInteres: z.enum(["gi", "no-gi", "wrestling", "fitness", "kids"]),
+  claseInteres: z.enum(["gi", "no-gi", "open-mat", "kids"]),
   mensaje: z.string().optional(),
   comoNosEncontraste: z.string().optional(),
 });
@@ -84,22 +84,15 @@ export default function InscripcionForm() {
   });
 
   const onSubmit = async (data: FormData) => {
-    // Convertir edad a número para el API
     const payload: FormDataFinal = { ...data, edad: Number(data.edad) };
 
-    /**
-     * INTEGRACIÓN REAL:
-     * const res = await fetch("/api/inscripciones", {
-     *   method: "POST",
-     *   headers: { "Content-Type": "application/json" },
-     *   body: JSON.stringify(payload),
-     * });
-     * if (!res.ok) throw new Error("Error al enviar");
-     */
+    const res = await fetch("/api/inscripciones", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-    // Demo: simulación de delay
-    await new Promise((r) => setTimeout(r, 1500));
-    console.log("Inscripción enviada:", payload);
+    if (!res.ok) throw new Error("Error al enviar");
     setEnviado(true);
   };
 
@@ -185,11 +178,10 @@ export default function InscripcionForm() {
           {...register("claseInteres")}
           className={cn(inputClass, "cursor-pointer")}
         >
-          <option value="gi">BJJ Gi (con kimono)</option>
-          <option value="no-gi">No-Gi (sin kimono)</option>
-          <option value="wrestling">Wrestling & Takedowns</option>
-          <option value="fitness">Fitness & Acondicionamiento</option>
-          <option value="kids">Kids (6-12 años)</option>
+          <option value="gi">BJJ Gi (con kimono) — Lun/Mié</option>
+          <option value="no-gi">BJJ No-Gi (sin kimono) — Mar/Jue</option>
+          <option value="open-mat">Open Mat Gi/No-Gi — Viernes</option>
+          <option value="kids">Kids BJJ (próximamente)</option>
         </select>
       </Field>
 

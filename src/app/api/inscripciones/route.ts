@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import type { ApiResponse, FormInscripcion } from "@/types";
-// import { createItem, CONTAINERS } from "@/lib/azure/cosmos";  // ← descomentar en prod
+import { createItem, CONTAINERS } from "@/lib/azure/cosmos";
 
 // ─── Schema de validación (igual que el frontend) ─────────────────────────────
 const inscripcionSchema = z.object({
@@ -20,7 +20,7 @@ const inscripcionSchema = z.object({
   telefono:           z.string().min(10),
   edad:               z.number().min(4).max(99),
   experienciaPrevia:  z.boolean(),
-  claseInteres:       z.enum(["gi", "no-gi", "wrestling", "fitness", "kids"]),
+  claseInteres:       z.enum(["gi", "no-gi", "open-mat", "kids"]),
   mensaje:            z.string().optional(),
   comoNosEncontraste: z.string().optional(),
 });
@@ -51,14 +51,7 @@ export async function POST(
       createdAt: new Date().toISOString(),
     };
 
-    /**
-     * PRODUCCIÓN — descomentar cuando Cosmos DB esté configurado:
-     *
-     * await createItem(CONTAINERS.INSCRIPCIONES, inscripcion);
-     */
-
-    // Demo: solo logueamos
-    console.log("[Inscripción]", inscripcion);
+    await createItem(CONTAINERS.INSCRIPCIONES, inscripcion);
 
     // 3. Enviar email de confirmación (Azure Communication Services o Resend)
     /**
