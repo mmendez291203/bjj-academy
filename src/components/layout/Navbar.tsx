@@ -27,7 +27,7 @@ export default function Navbar() {
   const tieneSesion = status === "authenticated";
 
   function handleSignOut() {
-    router.push("/api/signout");
+    window.location.href = "/api/signout";
   }
 
   return (

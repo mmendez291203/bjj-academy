@@ -8,7 +8,7 @@ export default function SignOutButton() {
   const router = useRouter();
 
   function handleSignOut() {
-    router.push("/api/signout");
+    window.location.href = "/api/signout";
   }
 
   return (
