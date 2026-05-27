@@ -42,9 +42,8 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="text-5xl sm:text-6xl lg:text-8xl font-extrabold tracking-tight text-white mb-6"
         >
-          Domina el arte del{" "}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-300">
-            Jiu-Jitsu
+            RUNAJERABJJ
           </span>
         </motion.h1>
 
@@ -55,8 +54,8 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-10"
         >
-          Entrena con instructores de clase mundial. Gi, No-Gi, Wrestling y Kids.
-          Construye confianza, disciplina y habilidad real en el tatami.
+          Brazilian Jiu-Jitsu Gi y No-Gi en Escazú, Costa Rica.
+          Clases de lunes a viernes a las 7:30 PM. Tu primera clase es gratis.
         </motion.p>
 
         {/* CTAs */}
@@ -88,10 +87,10 @@ export default function Hero() {
           className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 border-t border-white/5 pt-10"
         >
           {[
-            { valor: "200+",  label: "Alumnos activos"     },
-            { valor: "15+",   label: "Años de experiencia" },
-            { valor: "50+",   label: "Medallas en torneos" },
-            { valor: "3",     label: "Instructores black belt" },
+            { valor: "Gi",        label: "Clases con kimono"   },
+            { valor: "No-Gi",     label: "Clases sin kimono"   },
+            { valor: "7:30 PM",   label: "Lun — Vie"           },
+            { valor: "Escazú",    label: "Costa Rica"          },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
               <div className="text-4xl font-bold text-white mb-1">{stat.valor}</div>

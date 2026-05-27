@@ -26,7 +26,8 @@ export default function Instructors() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="flex justify-center">
+          <div className="grid grid-cols-1 gap-8 w-full max-w-sm">
           {instructoresMock.map((instructor, i) => (
             <motion.div
               key={instructor.id}
@@ -38,7 +39,6 @@ export default function Instructors() {
             >
               {/* Foto del instructor */}
               <div className="relative h-64 bg-gradient-to-br from-gray-900 to-gray-800">
-                {/* Placeholder — reemplaza con <Image> de next/image cuando tengas las fotos */}
                 <div className="absolute inset-0 flex items-center justify-center text-6xl">
                   🥋
                 </div>
@@ -62,19 +62,22 @@ export default function Instructors() {
                 <p className="text-xs text-red-400 font-medium mb-3">{instructor.especialidad}</p>
                 <p className="text-sm text-gray-400 leading-relaxed mb-4">{instructor.bio}</p>
 
-                {/* Instagram */}
-                <a
-                  href={`https://instagram.com/${instructor.instagram.replace("@","")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-pink-400 transition-colors"
-                >
-                  <InstagramIcon className="w-3.5 h-3.5" />
-                  {instructor.instagram}
-                </a>
+                {/* Instagram — solo si tiene */}
+                {instructor.instagram && (
+                  <a
+                    href={`https://instagram.com/${instructor.instagram.replace("@","")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-pink-400 transition-colors"
+                  >
+                    <InstagramIcon className="w-3.5 h-3.5" />
+                    {instructor.instagram}
+                  </a>
+                )}
               </div>
             </motion.div>
           ))}
+          </div>
         </div>
       </div>
     </section>

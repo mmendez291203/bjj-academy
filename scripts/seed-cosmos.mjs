@@ -39,22 +39,15 @@ if (!endpoint || !key) {
 const client   = new CosmosClient({ endpoint, key });
 const database = client.database(dbName);
 
-// ─── Datos de clases ──────────────────────────────────────────────────────────
+// ─── Datos de clases RUNAJERABJJ ─────────────────────────────────────────────
+const INSTRUCTOR = "Carlos Alberto Donado Nadales";
+
 const clases = [
-  { id:"cls-001", nombre:"BJJ Fundamentals", tipo:"gi", nivel:"principiante", dia:"lunes", horaInicio:"07:00", horaFin:"08:30", instructor:"Prof. Carlos Mendoza", capacidadMaxima:20, activa:true },
-  { id:"cls-002", nombre:"BJJ Avanzado", tipo:"gi", nivel:"avanzado", dia:"lunes", horaInicio:"19:00", horaFin:"20:30", instructor:"Prof. Carlos Mendoza", capacidadMaxima:15, activa:true },
-  { id:"cls-003", nombre:"No-Gi Grappling", tipo:"no-gi", nivel:"todos", dia:"lunes", horaInicio:"20:30", horaFin:"22:00", instructor:"Coach Ana Torres", capacidadMaxima:18, activa:true },
-  { id:"cls-004", nombre:"Kids BJJ (6-12 años)", tipo:"kids", nivel:"kids", dia:"martes", horaInicio:"16:00", horaFin:"17:00", instructor:"Coach Sofía Ramírez", capacidadMaxima:12, activa:true },
-  { id:"cls-005", nombre:"Open Mat — Sparring", tipo:"gi", nivel:"intermedio", dia:"martes", horaInicio:"19:00", horaFin:"20:30", instructor:"Prof. Carlos Mendoza", capacidadMaxima:25, activa:true },
-  { id:"cls-006", nombre:"Wrestling & Takedowns", tipo:"wrestling", nivel:"todos", dia:"miercoles", horaInicio:"07:00", horaFin:"08:30", instructor:"Coach Ana Torres", capacidadMaxima:20, activa:true },
-  { id:"cls-007", nombre:"BJJ Fundamentals", tipo:"gi", nivel:"principiante", dia:"miercoles", horaInicio:"19:00", horaFin:"20:30", instructor:"Prof. Carlos Mendoza", capacidadMaxima:20, activa:true },
-  { id:"cls-008", nombre:"No-Gi Avanzado", tipo:"no-gi", nivel:"avanzado", dia:"jueves", horaInicio:"19:00", horaFin:"20:30", instructor:"Coach Ana Torres", capacidadMaxima:15, activa:true },
-  { id:"cls-009", nombre:"Kids BJJ (6-12 años)", tipo:"kids", nivel:"kids", dia:"jueves", horaInicio:"16:00", horaFin:"17:00", instructor:"Coach Sofía Ramírez", capacidadMaxima:12, activa:true },
-  { id:"cls-010", nombre:"BJJ Avanzado", tipo:"gi", nivel:"avanzado", dia:"viernes", horaInicio:"07:00", horaFin:"08:30", instructor:"Prof. Carlos Mendoza", capacidadMaxima:15, activa:true },
-  { id:"cls-011", nombre:"Fitness & Conditioning", tipo:"fitness", nivel:"todos", dia:"viernes", horaInicio:"19:00", horaFin:"20:00", instructor:"Coach Sofía Ramírez", capacidadMaxima:25, activa:true },
-  { id:"cls-012", nombre:"Open Mat", tipo:"gi", nivel:"todos", dia:"viernes", horaInicio:"20:00", horaFin:"21:30", instructor:"Prof. Carlos Mendoza", capacidadMaxima:30, activa:true },
-  { id:"cls-013", nombre:"BJJ Todo Nivel", tipo:"gi", nivel:"todos", dia:"sabado", horaInicio:"09:00", horaFin:"11:00", instructor:"Prof. Carlos Mendoza", capacidadMaxima:30, activa:true },
-  { id:"cls-014", nombre:"Kids Open Mat", tipo:"kids", nivel:"kids", dia:"sabado", horaInicio:"11:00", horaFin:"12:00", instructor:"Coach Sofía Ramírez", capacidadMaxima:15, activa:true },
+  { id:"cls-001", nombre:"BJJ Gi",             tipo:"gi",    nivel:"todos", dia:"lunes",    horaInicio:"19:30", horaFin:"21:00", instructor:INSTRUCTOR, capacidadMaxima:20, descripcion:"Clase de Brazilian Jiu-Jitsu con kimono. Técnica, posiciones y sparring.", activa:true },
+  { id:"cls-002", nombre:"BJJ No-Gi",           tipo:"no-gi", nivel:"todos", dia:"martes",   horaInicio:"19:30", horaFin:"21:00", instructor:INSTRUCTOR, capacidadMaxima:20, descripcion:"Clase sin kimono. Énfasis en control, submissions y wrestling.",              activa:true },
+  { id:"cls-003", nombre:"BJJ Gi",             tipo:"gi",    nivel:"todos", dia:"miercoles", horaInicio:"19:30", horaFin:"21:00", instructor:INSTRUCTOR, capacidadMaxima:20, descripcion:"Clase de Brazilian Jiu-Jitsu con kimono. Técnica, posiciones y sparring.", activa:true },
+  { id:"cls-004", nombre:"BJJ No-Gi",           tipo:"no-gi", nivel:"todos", dia:"jueves",   horaInicio:"19:30", horaFin:"21:00", instructor:INSTRUCTOR, capacidadMaxima:20, descripcion:"Clase sin kimono. Énfasis en control, submissions y wrestling.",              activa:true },
+  { id:"cls-005", nombre:"Open Mat — Gi / No-Gi", tipo:"gi", nivel:"todos", dia:"viernes",  horaInicio:"19:30", horaFin:"21:00", instructor:INSTRUCTOR, capacidadMaxima:30, descripcion:"Mat abierto. Gi y No-Gi bienvenidos. Sparring libre y técnica.",              activa:true },
 ];
 
 // ─── Función para insertar datos ──────────────────────────────────────────────

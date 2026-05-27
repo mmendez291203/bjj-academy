@@ -64,20 +64,24 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 mt-0.5 text-red-500 shrink-0" />
-                {academy.address}
+                <span>{academy.address}</span>
               </li>
-              <li className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-red-500 shrink-0" />
-                <a href={`tel:${academy.phone}`} className="hover:text-white transition-colors">
-                  {academy.phone}
-                </a>
-              </li>
-              <li className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-red-500 shrink-0" />
-                <a href={`mailto:${academy.email}`} className="hover:text-white transition-colors">
-                  {academy.email}
-                </a>
-              </li>
+              {academy.phone && (
+                <li className="flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-red-500 shrink-0" />
+                  <a href={`https://wa.me/${academy.phone.replace(/\D/g,"")}`} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                    {academy.phone}
+                  </a>
+                </li>
+              )}
+              {academy.email && (
+                <li className="flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-red-500 shrink-0" />
+                  <a href={`mailto:${academy.email}`} className="hover:text-white transition-colors">
+                    {academy.email}
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
         </div>
