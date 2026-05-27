@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X, Shield } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+
+const LOGO_URL = "https://bjjacademymedia.blob.core.windows.net/media/1d9186b8-0994-4897-a394-319deeecf77d.png";
 
 const navLinks = [
   { href: "/",              label: "Inicio"        },
@@ -24,7 +27,13 @@ export default function Navbar() {
 
         {/* ─── Logo ─────────────────────────────────────────────────────── */}
         <Link href="/" className="flex items-center gap-2 font-bold text-white text-lg">
-          <Shield className="w-6 h-6 text-red-500" />
+          <Image
+            src={LOGO_URL}
+            alt={process.env.NEXT_PUBLIC_ACADEMY_NAME ?? "Academia BJJ"}
+            width={40}
+            height={40}
+            className="rounded-md object-contain"
+          />
           <span>
             {process.env.NEXT_PUBLIC_ACADEMY_NAME ?? "Academia BJJ"}
           </span>
