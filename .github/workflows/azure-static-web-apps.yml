@@ -38,6 +38,7 @@ jobs:
           NEXT_PUBLIC_ACADEMY_NAME: ${{ vars.NEXT_PUBLIC_ACADEMY_NAME }}
           NEXT_PUBLIC_ACADEMY_PHONE: ${{ vars.NEXT_PUBLIC_ACADEMY_PHONE }}
           NEXT_PUBLIC_ACADEMY_EMAIL: ${{ vars.NEXT_PUBLIC_ACADEMY_EMAIL }}
+          NEXT_PUBLIC_ACADEMY_ADDRESS: ${{ vars.NEXT_PUBLIC_ACADEMY_ADDRESS }}
 
       - name: 📂 Copiar archivos estáticos al standalone
         run: |
