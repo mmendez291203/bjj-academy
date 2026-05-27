@@ -1,50 +1,39 @@
-/**
- * Middleware de Next.js — Protección de rutas
- *
- * Se ejecuta en el Edge Runtime ANTES de que se procese la request.
- * Redirige a /login si el usuario intenta acceder a rutas protegidas sin sesión.
- *
- * Documentación: https://nextjs.org/docs/app/building-your-application/routing/middleware
- */
-
-import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Rutas que requieren autenticación
 const RUTAS_PROTEGIDAS = ["/dashboard", "/progreso", "/pagos", "/galeria"];
 
-// Rutas que NO deben ser accesibles si ya hay sesión (login)
+// Rutas solo para usuarios sin sesión
 const RUTAS_PUBLICAS_SOLO = ["/login"];
 
-export async function middleware(request: NextRequest) {
-  const session = await auth();
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Si intenta acceder a ruta protegida sin sesión → redirigir a login
-  const esRutaProtegida = RUTAS_PROTEGIDAS.some((ruta) =>
-    pathname.startsWith(ruta)
-  );
+  // NextAuth guarda la sesión en una de estas cookies
+  const sessionCookie =
+    request.cookies.get("next-auth.session-token") ??
+    request.cookies.get("__Secure-next-auth.session-token");
 
-  if (esRutaProtegida && !session) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(loginUrl);
+  const tieneSesion = !!sessionCookie;
+
+  // Sin sesión en ruta protegida → login
+  const esProtegida = RUTAS_PROTEGIDAS.some((r) => pathname.startsWith(r));
+  if (esProtegida && !tieneSesion) {
+    const url = new URL("/login", request.url);
+    url.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(url);
   }
 
-  // Si ya tiene sesión y va al login → redirigir al dashboard
-  const esRutaSoloPublica = RUTAS_PUBLICAS_SOLO.some((ruta) =>
-    pathname.startsWith(ruta)
-  );
-
-  if (esRutaSoloPublica && session) {
+  // Con sesión en /login → dashboard
+  const esSoloPublica = RUTAS_PUBLICAS_SOLO.some((r) => pathname.startsWith(r));
+  if (esSoloPublica && tieneSesion) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return NextResponse.next();
 }
 
-// Configura en qué rutas aplica el middleware
 export const config = {
   matcher: [
     "/dashboard",
