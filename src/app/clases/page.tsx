@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { findAll, CONTAINERS } from "@/lib/azure/cosmos";
 import { clasesMock } from "@/lib/data/clases-mock";
-import type { DiaSemana, TipoClase } from "@/types";
+import type { DiaSemana, TipoClase, Clase } from "@/types";
 import { formatHora, cn } from "@/lib/utils";
 import { Clock, Users } from "lucide-react";
 import Link from "next/link";
@@ -46,15 +47,19 @@ const TIPO_BADGE: Record<TipoClase, string> = {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function ClasesPage() {
+export default async function ClasesPage() {
   /**
-   * En producción, reemplaza clasesMock con:
-   * const clases = await findAll<Clase>(CONTAINERS.CLASES)
-   *
-   * Next.js ejecuta esto en el servidor (Server Component),
-   * por lo que el fetch ocurre antes de enviar HTML al cliente.
+   * Lee las clases desde Azure Cosmos DB.
+   * Si falla (ej: en desarrollo sin credenciales), usa los datos mock.
+   * Next.js ejecuta esto en el servidor antes de enviar HTML al cliente.
    */
-  const clases = clasesMock;
+  let clases: Clase[] = [];
+  try {
+    clases = await findAll<Clase>(CONTAINERS.CLASES);
+    if (clases.length === 0) clases = clasesMock; // fallback si está vacío
+  } catch {
+    clases = clasesMock; // fallback si no hay conexión a Cosmos DB
+  }
 
   return (
     <div className="min-h-screen bg-black pt-24 pb-16">
