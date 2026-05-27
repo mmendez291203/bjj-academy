@@ -17,12 +17,14 @@ import { findAll, createItem } from "@/lib/azure/cosmos";
 declare module "next-auth" {
   interface Session {
     user: {
-      id: string;
-      rol: Alumno["rol"];
+      id:     string;
+      rol:    Alumno["rol"];
+      activo: boolean;
     } & DefaultSession["user"];
   }
   interface User {
-    rol?: Alumno["rol"];
+    rol?:    Alumno["rol"];
+    activo?: boolean;
   }
 }
 
@@ -67,13 +69,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               id: string;
               email: string;
               rol: string;
+              activo?: boolean;
             }>("usuarios");
 
             const dbUser = usuarios.find((u) => u.email === user.email);
 
             if (dbUser) {
-              // Usuario existente → usar su rol
-              token.rol = dbUser.rol ?? "alumno";
+              // Usuario existente → usar su rol y estado
+              token.rol    = dbUser.rol    ?? "alumno";
+              token.activo = dbUser.activo !== false; // false solo si explícitamente inactivo
             } else {
               // Primera vez → crear documento con rol alumno
               await createItem("usuarios", {
@@ -88,7 +92,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 activo:            true,
                 creadoEn:          new Date().toISOString(),
               });
-              token.rol = "alumno";
+              token.rol    = "alumno";
+              token.activo = true;
             }
           } catch {
             token.rol = "alumno";
@@ -101,8 +106,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
 
     async session({ session, token }) {
-      session.user.id  = token.id as string;
-      session.user.rol = token.rol as Alumno["rol"];
+      session.user.id     = token.id     as string;
+      session.user.rol    = token.rol    as Alumno["rol"];
+      session.user.activo = token.activo !== false; // default true
       return session;
     },
   },
@@ -113,7 +119,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     error:   "/login",
   },
 
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    maxAge: 8 * 60 * 60, // 8 horas — si se desactiva un alumno, aplica en máximo 8h
+  },
 
   // ⚠️  Necesario en Azure App Service
   trustHost: true,
