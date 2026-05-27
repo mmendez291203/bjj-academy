@@ -116,10 +116,11 @@ export async function deleteItem(
 
 // ─── Containers específicos del dominio ──────────────────────────────────────
 export const CONTAINERS = {
-  ALUMNOS:    "alumnos",
-  CLASES:     "clases",
-  MEMBRESIAS: "membresias",
-  ASISTENCIA: "asistencia",
-  POSTS:      "posts",
+  ALUMNOS:       "alumnos",
+  CLASES:        "clases",
+  MEMBRESIAS:    "membresias",
+  ASISTENCIA:    "asistencia",
+  POSTS:         "posts",
   INSCRIPCIONES: "inscripciones",
+  USUARIOS:      "usuarios",
 } as const;

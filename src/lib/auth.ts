@@ -13,6 +13,7 @@ import NextAuth, { type DefaultSession } from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import type { Alumno } from "@/types";
+import { findAll } from "@/lib/azure/cosmos";
 
 // ─── Extender tipos de NextAuth ───────────────────────────────────────────────
 declare module "next-auth" {
@@ -75,10 +76,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
   callbacks: {
     // Agrega el ID y rol al JWT token
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
-        token.id  = user.id;
-        token.rol = user.rol ?? "alumno";
+        token.id = user.id;
+
+        // Para login con Google: buscar el rol en Cosmos DB
+        if (account?.provider === "google") {
+          try {
+            const usuarios = await findAll<{ email: string; rol: string }>("usuarios");
+            const dbUser   = usuarios.find((u) => u.email === user.email);
+            token.rol      = dbUser?.rol ?? "alumno";
+          } catch {
+            token.rol = "alumno";
+          }
+        } else {
+          token.rol = user.rol ?? "alumno";
+        }
       }
       return token;
     },
