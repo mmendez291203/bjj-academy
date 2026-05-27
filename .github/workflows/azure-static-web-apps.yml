@@ -45,7 +45,11 @@ jobs:
           cp -r public .next/standalone/public
 
       - name: 📦 Comprimir solo el standalone (~50MB)
-        run: zip -r deploy.zip .next/standalone
+        # ⚠️  Zipear DESDE DENTRO de standalone para que server.js quede en la
+        #     raíz del zip → /home/site/wwwroot/server.js (no en un subdirectorio)
+        run: |
+          cd .next/standalone
+          zip -r ../../deploy.zip .
 
       - name: 🚀 Deploy a Azure App Service
         uses: azure/webapps-deploy@v3
