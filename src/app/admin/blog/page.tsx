@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
+import { Plus, Pencil, Trash2, ExternalLink } from "lucide-react";
 
 type Post = {
   id:               string;
@@ -13,7 +13,6 @@ type Post = {
   autor:            string;
   publicado:        boolean;
   fechaPublicacion: string;
-  creadoEn:         string;
 };
 
 const CATEGORIA_LABEL: Record<string, string> = {
@@ -26,24 +25,21 @@ const CATEGORIA_LABEL: Record<string, string> = {
 
 export default function AdminBlogPage() {
   const router = useRouter();
-  const [posts,     setPosts]     = useState<Post[]>([]);
-  const [cargando,  setCargando]  = useState(true);
-  const [error,     setError]     = useState("");
+  const [posts,      setPosts]      = useState<Post[]>([]);
+  const [cargando,   setCargando]   = useState(true);
   const [eliminando, setEliminando] = useState<string | null>(null);
 
   async function cargar() {
     setCargando(true);
-    setError("");
     try {
       const res  = await fetch("/api/admin/posts");
       const data = await res.json();
-      if (!res.ok) { setError(data.error ?? "Error al cargar"); return; }
-      const sorted = (data.data as Post[]).sort(
-        (a, b) => b.fechaPublicacion.localeCompare(a.fechaPublicacion)
-      );
-      setPosts(sorted);
-    } catch {
-      setError("Error de conexión.");
+      if (res.ok) {
+        const sorted = (data.data as Post[]).sort(
+          (a, b) => b.fechaPublicacion.localeCompare(a.fechaPublicacion)
+        );
+        setPosts(sorted);
+      }
     } finally {
       setCargando(false);
     }
@@ -61,7 +57,7 @@ export default function AdminBlogPage() {
   }
 
   async function eliminar(post: Post) {
-    if (!confirm(`¿Eliminar "${post.titulo}"? Esta acción no se puede deshacer.`)) return;
+    if (!confirm(`¿Eliminar "${post.titulo}"?`)) return;
     setEliminando(post.id);
     await fetch(`/api/admin/posts/${post.id}`, { method: "DELETE" });
     setEliminando(null);
@@ -69,112 +65,118 @@ export default function AdminBlogPage() {
   }
 
   return (
-    <div className="p-6 sm:p-8 max-w-5xl">
+    <div className="p-6 sm:p-8 max-w-4xl">
 
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-extrabold text-white">Blog</h1>
-          <p className="text-sm text-gray-500 mt-1">Gestiona los artículos del blog</p>
-        </div>
+        <h1 className="text-2xl font-extrabold text-white">Artículos del blog</h1>
         <Link
           href="/admin/blog/nuevo"
-          className="inline-flex items-center gap-2 bg-white text-black text-sm font-semibold px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+          className="inline-flex items-center gap-2 bg-white text-black text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-gray-100 transition-colors"
         >
           <Plus className="w-4 h-4" />
           Nuevo artículo
         </Link>
       </div>
 
-      {/* Error */}
-      {error && (
-        <p className="text-xs text-red-400 bg-red-900/20 border border-red-900/30 rounded-lg px-3 py-2 mb-6">
-          {error}
-        </p>
-      )}
-
       {/* Cargando */}
       {cargando ? (
-        <div className="text-center py-20 text-gray-600 text-sm">Cargando artículos…</div>
+        <div className="text-center py-20 text-gray-600 text-sm">Cargando…</div>
       ) : posts.length === 0 ? (
-        <div className="text-center py-20 text-gray-600">
-          <p className="mb-4">No hay artículos todavía.</p>
-          <Link href="/admin/blog/nuevo" className="text-white underline text-sm">
-            Crear el primero →
+        <div className="text-center py-20">
+          <p className="text-gray-600 mb-6">No hay artículos todavía.</p>
+          <Link
+            href="/admin/blog/nuevo"
+            className="inline-flex items-center gap-2 bg-white text-black font-bold px-6 py-3 rounded-xl hover:bg-gray-100 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Crear el primer artículo
           </Link>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {posts.map((post) => (
             <div
               key={post.id}
-              className="flex items-center gap-4 rounded-xl border border-white/5 bg-gray-950 px-5 py-4 hover:border-white/10 transition-colors"
+              className="rounded-2xl border border-white/8 bg-gray-950 p-5"
             >
-              {/* Indicador publicado */}
-              <span className={`w-2 h-2 rounded-full shrink-0 ${post.publicado ? "bg-green-500" : "bg-gray-700"}`} />
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-medium truncate">{post.titulo}</p>
-                <div className="flex items-center gap-3 mt-1 flex-wrap">
-                  <span className="text-xs text-gray-600">{post.fechaPublicacion}</span>
-                  <span className="text-xs text-gray-600">{CATEGORIA_LABEL[post.categoria] ?? post.categoria}</span>
-                  <span className="text-xs text-gray-600">{post.autor}</span>
-                  {!post.publicado && (
-                    <span className="text-xs text-yellow-600 font-medium">Borrador</span>
-                  )}
+              {/* Título + categoría */}
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div className="min-w-0">
+                  <p className="text-white font-semibold text-base leading-snug mb-1">{post.titulo}</p>
+                  <div className="flex items-center gap-2 flex-wrap text-xs text-gray-500">
+                    <span>{post.fechaPublicacion}</span>
+                    <span>·</span>
+                    <span>{CATEGORIA_LABEL[post.categoria] ?? post.categoria}</span>
+                    <span>·</span>
+                    <span>{post.autor}</span>
+                  </div>
                 </div>
+
+                {/* Badge estado */}
+                <span className={`shrink-0 text-xs font-semibold px-3 py-1 rounded-full ${
+                  post.publicado
+                    ? "bg-green-950/60 text-green-400 border border-green-900/40"
+                    : "bg-gray-900 text-gray-500 border border-white/5"
+                }`}>
+                  {post.publicado ? "Publicado" : "Borrador"}
+                </span>
               </div>
 
-              {/* Acciones */}
-              <div className="flex items-center gap-1 shrink-0">
-                {/* Ver en blog */}
-                {post.publicado && (
-                  <a
-                    href={`/blog/${post.slug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 text-gray-600 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
-                    title="Ver en blog"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </a>
-                )}
+              {/* Botones de acción */}
+              <div className="flex flex-wrap gap-2">
 
-                {/* Toggle publicado */}
+                {/* Publicar / Despublicar */}
                 <button
                   onClick={() => togglePublicado(post)}
-                  className="p-2 text-gray-600 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
-                  title={post.publicado ? "Despublicar" : "Publicar"}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                    post.publicado
+                      ? "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                      : "bg-green-700 text-white hover:bg-green-600"
+                  }`}
                 >
-                  {post.publicado ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {post.publicado ? "Despublicar" : "Publicar"}
                 </button>
 
                 {/* Editar */}
                 <button
                   onClick={() => router.push(`/admin/blog/${post.id}`)}
-                  className="p-2 text-gray-600 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
-                  title="Editar"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
                 >
-                  <Pencil className="w-4 h-4" />
+                  <Pencil className="w-3.5 h-3.5" />
+                  Editar
                 </button>
+
+                {/* Ver en blog (solo si publicado) */}
+                {post.publicado && (
+                  <a
+                    href={`/blog/${post.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    Ver en blog
+                  </a>
+                )}
 
                 {/* Eliminar */}
                 <button
                   onClick={() => eliminar(post)}
                   disabled={eliminando === post.id}
-                  className="p-2 text-gray-600 hover:text-red-400 rounded-lg hover:bg-red-900/10 transition-colors disabled:opacity-40"
-                  title="Eliminar"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-red-950/40 text-red-400 hover:bg-red-900/50 transition-colors disabled:opacity-40 ml-auto"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3.5 h-3.5" />
+                  {eliminando === post.id ? "Eliminando…" : "Eliminar"}
                 </button>
+
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Footer info */}
+      {/* Resumen */}
       {!cargando && posts.length > 0 && (
         <p className="text-xs text-gray-700 mt-6">
           {posts.filter((p) => p.publicado).length} publicados · {posts.filter((p) => !p.publicado).length} borradores
