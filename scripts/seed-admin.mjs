@@ -1,5 +1,5 @@
 /**
- * Registra al usuario admin en Cosmos DB.
+ * Registra al usuario admin en Cosmos DB con datos reales.
  * Uso: node scripts/seed-admin.mjs
  */
 
@@ -25,27 +25,32 @@ const client   = new CosmosClient({ endpoint: process.env.COSMOS_DB_ENDPOINT, ke
 const database = client.database(process.env.COSMOS_DB_DATABASE ?? "bjj-academy");
 
 const adminUser = {
-  id:       "usr-admin-001",
-  email:    "mariomendezzu87@gmail.com",
-  nombre:   "Mario Méndez",
-  rol:      "admin",
-  cinturon: "blanco",
-  galones:  0,
-  activo:   true,
-  creadoEn: new Date().toISOString(),
+  id:                "usr-admin-001",
+  email:             "mariomendezzu87@gmail.com",
+  nombre:            "Mario Méndez",
+  rol:               "admin",
+  cinturon:          "blanco",
+  grados:            2,           // rayas en el cinturón (0–4)
+  clasesCompletadas: 120,         // ~Oct 2025 – May 2026, promedio 4x/semana
+  clasesEsteMes:     0,           // el admin actualiza esto cada mes
+  proximoPago:       null,        // fecha ISO string o null
+  fechaInicio:       "2025-10-01",
+  activo:            true,
+  creadoEn:          new Date().toISOString(),
 };
 
 async function main() {
-  console.log("🚀 Registrando usuario admin en Cosmos DB...");
+  console.log("🚀 Actualizando usuario admin en Cosmos DB...");
 
-  // Crear container si no existe
   const { container } = await database.containers.createIfNotExists({
     id: "usuarios",
     partitionKey: { paths: ["/id"] },
   });
 
   await container.items.upsert(adminUser);
-  console.log(`✅ Admin registrado: ${adminUser.email} (rol: ${adminUser.rol})`);
+  console.log(`✅ Admin actualizado: ${adminUser.email}`);
+  console.log(`   Cinturón: ${adminUser.cinturon} · ${adminUser.grados} grados`);
+  console.log(`   Clases: ${adminUser.clasesCompletadas} totales`);
 }
 
 main().catch(console.error);
