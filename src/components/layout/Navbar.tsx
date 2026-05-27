@@ -24,6 +24,8 @@ export default function Navbar() {
   const { data: session, status } = useSession();
 
   const tieneSesion = status === "authenticated";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const esAdmin     = (session as any)?.user?.rol === "admin";
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5">
@@ -62,6 +64,12 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-3">
           {tieneSesion ? (
             <>
+              {/* Botón Admin — solo visible si rol=admin */}
+              {esAdmin && (
+                <Link href="/admin" className="text-xs font-bold text-red-400 hover:text-red-300 border border-red-900/50 px-2.5 py-1 rounded-md transition-colors">
+                  ⚙️ Admin
+                </Link>
+              )}
               <Link href="/dashboard" className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors">
                 {session?.user?.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
