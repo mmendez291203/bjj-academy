@@ -32,8 +32,8 @@ const adminUser = {
   cinturon:          "blanco",
   grados:            2,           // rayas en el cinturón (0–4)
   clasesCompletadas: 120,         // ~Oct 2025 – May 2026, promedio 4x/semana
-  clasesEsteMes:     0,           // el admin actualiza esto cada mes
-  proximoPago:       null,        // fecha ISO string o null
+  clasesEsteMes:     0,           // se calcula automáticamente con el módulo de asistencia
+  proximoPago:       "2026-05-30T12:00:00.000Z", // 30 de cada mes
   fechaInicio:       "2025-10-01",
   activo:            true,
   creadoEn:          new Date().toISOString(),

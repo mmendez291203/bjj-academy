@@ -1,5 +1,5 @@
 import { findAll, CONTAINERS } from "@/lib/azure/cosmos";
-import { Users, FileText, Calendar } from "lucide-react";
+import { Users, FileText, Calendar, ClipboardList } from "lucide-react";
 import Link from "next/link";
 
 export const dynamic  = "force-dynamic";
@@ -45,16 +45,21 @@ export default async function AdminPage() {
 
       {/* Accesos rápidos */}
       <h2 className="text-lg font-bold text-white mb-4">Accesos rápidos</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Link href="/admin/inscripciones" className="rounded-xl border border-white/5 bg-gray-950 p-5 hover:border-blue-800/50 transition-all">
-          <FileText className="w-6 h-6 text-blue-400 mb-3" />
-          <h3 className="font-semibold text-white mb-1">Ver Inscripciones</h3>
-          <p className="text-sm text-gray-500">Personas que solicitaron una clase gratis.</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Link href="/admin/asistencia" className="rounded-xl border border-white/5 bg-gray-950 p-5 hover:border-red-800/50 transition-all">
+          <ClipboardList className="w-6 h-6 text-red-400 mb-3" />
+          <h3 className="font-semibold text-white mb-1">Registrar Asistencia</h3>
+          <p className="text-sm text-gray-500">Marca qué alumnos asistieron hoy.</p>
         </Link>
         <Link href="/admin/alumnos" className="rounded-xl border border-white/5 bg-gray-950 p-5 hover:border-green-800/50 transition-all">
           <Users className="w-6 h-6 text-green-400 mb-3" />
-          <h3 className="font-semibold text-white mb-1">Ver Alumnos</h3>
-          <p className="text-sm text-gray-500">Usuarios registrados en el portal.</p>
+          <h3 className="font-semibold text-white mb-1">Alumnos</h3>
+          <p className="text-sm text-gray-500">Editar cinturón, grados y pagos.</p>
+        </Link>
+        <Link href="/admin/inscripciones" className="rounded-xl border border-white/5 bg-gray-950 p-5 hover:border-blue-800/50 transition-all">
+          <FileText className="w-6 h-6 text-blue-400 mb-3" />
+          <h3 className="font-semibold text-white mb-1">Inscripciones</h3>
+          <p className="text-sm text-gray-500">Solicitudes de clase gratis.</p>
         </Link>
       </div>
     </div>

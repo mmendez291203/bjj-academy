@@ -66,6 +66,20 @@ export async function findAll<T = any>(containerId: string): Promise<T[]> {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function findByQuery<T = any>(
+  containerId: string,
+  query: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  parameters: { name: string; value: any }[] = []
+): Promise<T[]> {
+  const container = await getContainer(containerId);
+  const { resources } = await container.items
+    .query<T>({ query, parameters })
+    .fetchAll();
+  return resources;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function findById<T = any>(
   containerId: string,
   id: string

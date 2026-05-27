@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
-import { findAll, CONTAINERS } from "@/lib/azure/cosmos";
+import { findAll, findByQuery, CONTAINERS } from "@/lib/azure/cosmos";
 import { colorCinturon, capitalizar, formatFecha } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { Trophy, Calendar, CreditCard, TrendingUp, Clock } from "lucide-react";
@@ -103,11 +103,30 @@ export default async function DashboardPage() {
     // Si falla, el dashboard muestra los datos de la sesión sin stats
   }
 
-  const cinturon          = usuario?.cinturon          ?? "blanco";
-  const grados            = usuario?.grados            ?? 0;
+  const cinturon          = usuario?.cinturon  ?? "blanco";
+  const grados            = usuario?.grados    ?? 0;
+  const proximoPago       = usuario?.proximoPago ?? null;
+
+  // Clases completadas totales (campo del usuario, admin lo mantiene al registrar asistencia)
   const clasesCompletadas = usuario?.clasesCompletadas ?? 0;
-  const clasesEsteMes     = usuario?.clasesEsteMes     ?? 0;
-  const proximoPago       = usuario?.proximoPago       ?? null;
+
+  // Clases este mes: calculadas desde la tabla de asistencia (siempre precisas)
+  const ahora     = new Date();
+  const mesActual = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, "0")}`;
+  let clasesEsteMes = 0;
+  try {
+    const asistenciaMes = await findByQuery<{ id: string }>(
+      CONTAINERS.ASISTENCIA,
+      "SELECT c.id FROM c WHERE c.alumnoEmail = @email AND STARTSWITH(c.fecha, @mes)",
+      [
+        { name: "@email", value: email },
+        { name: "@mes",   value: mesActual },
+      ]
+    );
+    clasesEsteMes = asistenciaMes.length;
+  } catch {
+    // Si falla, muestra 0
+  }
 
   const progreso = getProgresoNivel(cinturon, clasesCompletadas);
 

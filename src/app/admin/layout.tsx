@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { Users, FileText, LayoutDashboard, Home } from "lucide-react";
+import { Users, FileText, LayoutDashboard, Home, ClipboardList } from "lucide-react";
 
 const adminLinks = [
-  { href: "/admin",                label: "Resumen",       icon: LayoutDashboard },
-  { href: "/admin/inscripciones",  label: "Inscripciones", icon: FileText        },
-  { href: "/admin/alumnos",        label: "Alumnos",       icon: Users           },
+  { href: "/admin",               label: "Resumen",       icon: LayoutDashboard },
+  { href: "/admin/asistencia",    label: "Asistencia",    icon: ClipboardList   },
+  { href: "/admin/alumnos",       label: "Alumnos",       icon: Users           },
+  { href: "/admin/inscripciones", label: "Inscripciones", icon: FileText        },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
