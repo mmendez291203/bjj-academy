@@ -2,6 +2,7 @@ import { findAll, CONTAINERS } from "@/lib/azure/cosmos";
 import { colorCinturon, capitalizar } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
+export const dynamic  = "force-dynamic";
 export const metadata = { title: "Alumnos — Admin" };
 
 type Usuario = {

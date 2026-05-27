@@ -2,6 +2,7 @@ import { findAll, CONTAINERS } from "@/lib/azure/cosmos";
 import { Users, FileText, Calendar } from "lucide-react";
 import Link from "next/link";
 
+export const dynamic  = "force-dynamic";
 export const metadata = { title: "Panel Admin — RUNAJERABJJ" };
 
 export default async function AdminPage() {

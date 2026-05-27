@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
 import { findAll, CONTAINERS } from "@/lib/azure/cosmos";
 import { clasesMock } from "@/lib/data/clases-mock";

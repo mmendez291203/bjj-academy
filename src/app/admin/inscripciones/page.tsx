@@ -1,6 +1,7 @@
 import { findAll, CONTAINERS } from "@/lib/azure/cosmos";
 import { formatFecha } from "@/lib/utils";
 
+export const dynamic  = "force-dynamic";
 export const metadata = { title: "Inscripciones — Admin" };
 
 type Inscripcion = {
