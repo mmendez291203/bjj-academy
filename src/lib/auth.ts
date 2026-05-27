@@ -92,10 +92,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
 
   pages: {
-    signIn:  "/login",          // Página de login personalizada
+    signIn:  "/login",
     signOut: "/",
     error:   "/login",
   },
 
   session: { strategy: "jwt" },
+
+  // ⚠️  Necesario en Azure App Service: el servidor corre en 0.0.0.0:8080
+  // internamente pero el dominio público viene en el header X-Forwarded-Host.
+  // trustHost le dice a NextAuth que confíe en ese header para construir
+  // las URLs de callback de OAuth.
+  trustHost: true,
 });
