@@ -43,8 +43,13 @@ function LoginContent() {
       <div className="w-full max-w-sm">
 
         {/* Logo */}
-        <div className="text-center mb-10">
-          <h1 className="text-3xl font-extrabold text-white mb-2">RUNAJERABJJ</h1>
+        <div className="flex flex-col items-center mb-10">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="https://bjjacademymedia.blob.core.windows.net/media/e6ab8535-3299-4ed8-b259-c73b4b4c4e31.png"
+            alt="RUNAJERABJJ"
+            className="h-20 w-auto object-contain mb-3"
+          />
           <p className="text-gray-400 text-sm">Portal del Alumno</p>
         </div>
 

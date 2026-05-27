@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
 
-const LOGO_URL = "https://bjjacademymedia.blob.core.windows.net/media/1d9186b8-0994-4897-a394-319deeecf77d.png";
+const LOGO_URL = "https://bjjacademymedia.blob.core.windows.net/media/e6ab8535-3299-4ed8-b259-c73b4b4c4e31.png";
 
 const navLinks = [
   { href: "/",              label: "Inicio"     },
