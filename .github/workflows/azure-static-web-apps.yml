@@ -1,11 +1,9 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # CI/CD — Azure App Service
 #
-# Se ejecuta automáticamente cuando haces push a main.
-# Construye Next.js y despliega en Azure App Service.
-#
-# SECRET requerido en GitHub:
-#   AZURE_WEBAPP_PUBLISH_PROFILE → lo obtienes de Azure Portal o CLI
+# Estrategia:
+# 1. GitHub Actions construye el proyecto completo
+# 2. Sube los archivos ya construidos a Azure (Azure NO vuelve a construir)
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: Deploy to Azure App Service
@@ -30,7 +28,7 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: 📦 Instalar dependencias
+      - name: 📦 Instalar TODAS las dependencias
         run: npm install --legacy-peer-deps
 
       - name: 🏗️ Build de producción
@@ -41,6 +39,9 @@ jobs:
           NEXT_PUBLIC_ACADEMY_NAME: ${{ vars.NEXT_PUBLIC_ACADEMY_NAME }}
           NEXT_PUBLIC_ACADEMY_PHONE: ${{ vars.NEXT_PUBLIC_ACADEMY_PHONE }}
           NEXT_PUBLIC_ACADEMY_EMAIL: ${{ vars.NEXT_PUBLIC_ACADEMY_EMAIL }}
+
+      - name: 🧹 Remover devDependencies antes de subir
+        run: npm prune --production --legacy-peer-deps
 
       - name: 🚀 Deploy a Azure App Service
         uses: azure/webapps-deploy@v3
