@@ -1,18 +1,17 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
-// Rutas que requieren autenticación
-const RUTAS_PROTEGIDAS = ["/dashboard", "/progreso", "/pagos", "/galeria", "/admin"];
-
-// Rutas solo para admin
-const RUTAS_ADMIN = ["/admin"];
-
-// Rutas solo para usuarios sin sesión
+const RUTAS_PROTEGIDAS   = ["/dashboard", "/progreso", "/pagos", "/galeria", "/admin"];
 const RUTAS_PUBLICAS_SOLO = ["/login"];
+
+// Roles con acceso al panel de administración
+const ROLES_ADMIN = ["admin", "instructor"];
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
-  const session = req.auth;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const session = req.auth as any;
+  const rol: string = session?.user?.rol ?? "";
 
   // Sin sesión en ruta protegida → login
   const esProtegida = RUTAS_PROTEGIDAS.some((r) => pathname.startsWith(r));
@@ -22,11 +21,11 @@ export default auth((req) => {
     return NextResponse.redirect(url);
   }
 
-  // Con sesión pero sin rol admin en ruta de admin → dashboard
-  const esAdmin = RUTAS_ADMIN.some((r) => pathname.startsWith(r));
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (esAdmin && (session as any)?.user?.rol !== "admin") {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+  // Ruta de admin: solo admin e instructor
+  if (pathname.startsWith("/admin")) {
+    if (!ROLES_ADMIN.includes(rol)) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
   }
 
   // Con sesión en /login → dashboard

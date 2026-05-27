@@ -1,24 +1,30 @@
 import Link from "next/link";
 import { Users, FileText, LayoutDashboard, Home, ClipboardList } from "lucide-react";
+import { auth } from "@/lib/auth";
 
-const adminLinks = [
+const ADMIN_LINKS = [
   { href: "/admin",               label: "Resumen",       icon: LayoutDashboard },
   { href: "/admin/asistencia",    label: "Asistencia",    icon: ClipboardList   },
   { href: "/admin/alumnos",       label: "Alumnos",       icon: Users           },
   { href: "/admin/inscripciones", label: "Inscripciones", icon: FileText        },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const session = await auth() as any;
+  const rol: string = session?.user?.rol ?? "admin";
+  const esInstructor = rol === "instructor";
+
   return (
     <div className="min-h-screen bg-black pt-16 flex">
 
       {/* ─── Sidebar ────────────────────────────────────────────────────── */}
       <aside className="w-56 shrink-0 border-r border-white/5 bg-gray-950 pt-8 px-4 hidden md:block">
         <p className="text-xs text-gray-600 font-semibold uppercase tracking-widest mb-4 px-2">
-          Panel Admin
+          {esInstructor ? "Panel Instructor" : "Panel Admin"}
         </p>
         <nav className="space-y-1">
-          {adminLinks.map(({ href, label, icon: Icon }) => (
+          {ADMIN_LINKS.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}

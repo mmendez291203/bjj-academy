@@ -24,6 +24,7 @@ export type UsuarioAdmin = {
 };
 
 type FormState = {
+  rol: string;
   cinturon: string;
   grados: number;
   clasesCompletadas: number;
@@ -46,7 +47,7 @@ export default function AlumnosTable({ usuarios }: { usuarios: UsuarioAdmin[] })
   const router = useRouter();
   const [editando, setEditando] = useState<UsuarioAdmin | null>(null);
   const [form, setForm] = useState<FormState>({
-    cinturon: "blanco", grados: 0, clasesCompletadas: 0,
+    rol: "alumno", cinturon: "blanco", grados: 0, clasesCompletadas: 0,
     clasesEsteMes: 0, proximoPago: "", activo: true,
   });
   const [guardando, setGuardando] = useState(false);
@@ -55,6 +56,7 @@ export default function AlumnosTable({ usuarios }: { usuarios: UsuarioAdmin[] })
   function abrirModal(u: UsuarioAdmin) {
     setEditando(u);
     setForm({
+      rol:               u.rol               ?? "alumno",
       cinturon:          u.cinturon          ?? "blanco",
       grados:            u.grados            ?? 0,
       clasesCompletadas: u.clasesCompletadas ?? 0,
@@ -79,6 +81,7 @@ export default function AlumnosTable({ usuarios }: { usuarios: UsuarioAdmin[] })
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          rol:               form.rol,
           cinturon:          form.cinturon,
           grados:            Number(form.grados),
           clasesCompletadas: Number(form.clasesCompletadas),
@@ -194,6 +197,25 @@ export default function AlumnosTable({ usuarios }: { usuarios: UsuarioAdmin[] })
             </p>
 
             <div className="space-y-4">
+              {/* Rol */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">
+                  Rol en el sistema
+                </label>
+                <select
+                  value={form.rol}
+                  onChange={(e) => setForm((f) => ({ ...f, rol: e.target.value }))}
+                  className="w-full bg-gray-950 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-white/30"
+                >
+                  <option value="alumno">Alumno — acceso solo a su portal</option>
+                  <option value="instructor">Instructor — acceso total al panel</option>
+                  <option value="admin">Admin — acceso total + configuración</option>
+                </select>
+                <p className="text-xs text-gray-600 mt-1.5">
+                  ⚠️ El cambio aplica la próxima vez que el usuario cierre e inicie sesión.
+                </p>
+              </div>
+
               {/* Cinturón */}
               <div>
                 <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">

@@ -48,9 +48,10 @@ type UsuarioDoc = {
 };
 
 export async function POST(req: NextRequest) {
-  // Solo admins
+  // Solo admin o instructor
   const session = await auth();
-  if (!session || session.user?.rol !== "admin") {
+  const rol = session?.user?.rol ?? "";
+  if (!session || !["admin", "instructor"].includes(rol)) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
@@ -130,7 +131,8 @@ export async function POST(req: NextRequest) {
 // GET — historial de asistencia (últimas 100 entradas)
 export async function GET() {
   const session = await auth();
-  if (!session || session.user?.rol !== "admin") {
+  const rol = session?.user?.rol ?? "";
+  if (!session || !["admin", "instructor"].includes(rol)) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

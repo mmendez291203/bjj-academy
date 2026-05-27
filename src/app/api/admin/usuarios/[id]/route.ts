@@ -17,6 +17,7 @@ const schema = z.object({
   proximoPago:       z.string().nullable().optional(),
   activo:            z.boolean().optional(),
   nombre:            z.string().optional(),
+  rol:               z.enum(["alumno", "instructor", "admin"]).optional(),
 });
 
 export async function PATCH(

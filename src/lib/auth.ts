@@ -1,19 +1,17 @@
 /**
  * Configuración de NextAuth v5 (Auth.js)
  *
- * Soporta:
- * - Google OAuth para login social
- * - Credentials (email + password) para login manual
- *
- * El rol del usuario se guarda en el JWT token y se propaga a la sesión.
- * Documentación: https://authjs.dev/
+ * Google OAuth para login social.
+ * El rol del usuario se lee de Cosmos DB y se guarda en el JWT.
+ * Si el usuario inicia sesión por primera vez, se crea su documento
+ * automáticamente con rol "alumno".
  */
 
 import NextAuth, { type DefaultSession } from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import type { Alumno } from "@/types";
-import { findAll } from "@/lib/azure/cosmos";
+import { findAll, createItem } from "@/lib/azure/cosmos";
 
 // ─── Extender tipos de NextAuth ───────────────────────────────────────────────
 declare module "next-auth" {
@@ -37,7 +35,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
 
-    // ─── Email + Password ────────────────────────────────────────────────────
+    // ─── Email + Password (demo) ─────────────────────────────────────────────
     Credentials({
       name: "Email y Contraseña",
       credentials: {
@@ -45,22 +43,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Contraseña", type: "password" },
       },
       async authorize(credentials) {
-        /**
-         * INTEGRACIÓN CON COSMOS DB:
-         * Aquí buscarías al alumno en Cosmos DB y verificarías la contraseña con bcrypt.
-         *
-         * import { findAll, CONTAINERS } from "@/lib/azure/cosmos"
-         * import bcrypt from "bcryptjs"
-         *
-         * const alumnos = await findAll<Alumno & { passwordHash: string }>(CONTAINERS.ALUMNOS)
-         * const alumno = alumnos.find(a => a.email === credentials.email)
-         * if (!alumno) return null
-         * const valido = await bcrypt.compare(credentials.password as string, alumno.passwordHash)
-         * if (!valido) return null
-         * return { id: alumno.id, name: alumno.nombre, email: alumno.email, rol: alumno.rol }
-         */
-
-        // Demo: acepta cualquier email con contraseña "bjj123"
         if (credentials?.password === "bjj123") {
           return {
             id: "demo-user-1",
@@ -75,17 +57,39 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
 
   callbacks: {
-    // Agrega el ID y rol al JWT token
     async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
 
-        // Para login con Google: buscar el rol en Cosmos DB
         if (account?.provider === "google") {
           try {
-            const usuarios = await findAll<{ email: string; rol: string }>("usuarios");
-            const dbUser   = usuarios.find((u) => u.email === user.email);
-            token.rol      = dbUser?.rol ?? "alumno";
+            const usuarios = await findAll<{
+              id: string;
+              email: string;
+              rol: string;
+            }>("usuarios");
+
+            const dbUser = usuarios.find((u) => u.email === user.email);
+
+            if (dbUser) {
+              // Usuario existente → usar su rol
+              token.rol = dbUser.rol ?? "alumno";
+            } else {
+              // Primera vez → crear documento con rol alumno
+              await createItem("usuarios", {
+                id:                `usr-${crypto.randomUUID()}`,
+                email:             user.email ?? "",
+                nombre:            user.name  ?? "",
+                rol:               "alumno",
+                cinturon:          "blanco",
+                grados:            0,
+                clasesCompletadas: 0,
+                clasesEsteMes:     0,
+                activo:            true,
+                creadoEn:          new Date().toISOString(),
+              });
+              token.rol = "alumno";
+            }
           } catch {
             token.rol = "alumno";
           }
@@ -96,7 +100,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return token;
     },
 
-    // Propaga el ID y rol a la sesión del cliente
     async session({ session, token }) {
       session.user.id  = token.id as string;
       session.user.rol = token.rol as Alumno["rol"];
@@ -112,9 +115,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
   session: { strategy: "jwt" },
 
-  // ⚠️  Necesario en Azure App Service: el servidor corre en 0.0.0.0:8080
-  // internamente pero el dominio público viene en el header X-Forwarded-Host.
-  // trustHost le dice a NextAuth que confíe en ese header para construir
-  // las URLs de callback de OAuth.
+  // ⚠️  Necesario en Azure App Service
   trustHost: true,
 });
