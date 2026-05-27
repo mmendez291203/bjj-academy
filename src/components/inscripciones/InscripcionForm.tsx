@@ -72,7 +72,8 @@ const inputClass =
 
 // ─── Formulario principal ─────────────────────────────────────────────────────
 export default function InscripcionForm() {
-  const [enviado, setEnviado] = useState(false);
+  const [enviado, setEnviado]   = useState(false);
+  const [errorApi, setErrorApi] = useState<string | null>(null);
 
   const {
     register,
@@ -84,16 +85,25 @@ export default function InscripcionForm() {
   });
 
   const onSubmit = async (data: FormData) => {
+    setErrorApi(null);
     const payload: FormDataFinal = { ...data, edad: Number(data.edad) };
 
-    const res = await fetch("/api/inscripciones", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const res  = await fetch("/api/inscripciones", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
 
-    if (!res.ok) throw new Error("Error al enviar");
-    setEnviado(true);
+      if (!res.ok) {
+        setErrorApi(json.error ?? "Error al enviar el formulario. Intenta de nuevo.");
+        return;
+      }
+      setEnviado(true);
+    } catch {
+      setErrorApi("Error de conexión. Verifica tu internet e intenta de nuevo.");
+    }
   };
 
   // ─── Estado de éxito ───────────────────────────────────────────────────────
@@ -115,6 +125,13 @@ export default function InscripcionForm() {
   // ─── Formulario ────────────────────────────────────────────────────────────
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+
+      {/* Error del API */}
+      {errorApi && (
+        <div className="rounded-lg bg-red-950/40 border border-red-800 text-red-300 px-4 py-3 text-sm">
+          ❌ {errorApi}
+        </div>
+      )}
       <h2 className="text-xl font-bold text-white mb-1">
         Formulario de inscripción
       </h2>

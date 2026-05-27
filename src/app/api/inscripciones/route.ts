@@ -51,15 +51,16 @@ export async function POST(
       createdAt: new Date().toISOString(),
     };
 
-    await createItem(CONTAINERS.INSCRIPCIONES, inscripcion);
-
-    // 3. Enviar email de confirmación (Azure Communication Services o Resend)
-    /**
-     * await sendConfirmationEmail({
-     *   to: data.email,
-     *   nombre: data.nombre,
-     * });
-     */
+    try {
+      await createItem(CONTAINERS.INSCRIPCIONES, inscripcion);
+    } catch (dbError) {
+      const msg = dbError instanceof Error ? dbError.message : String(dbError);
+      console.error("[Cosmos DB]", msg);
+      return NextResponse.json(
+        { success: false, error: `Error guardando datos: ${msg}` },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(
       { success: true, data: { id: inscripcion.id }, message: "Inscripción registrada" },
