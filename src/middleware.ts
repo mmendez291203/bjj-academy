@@ -12,7 +12,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Rutas que requieren autenticación
-const RUTAS_PROTEGIDAS = ["/dashboard", "/progreso", "/pagos"];
+const RUTAS_PROTEGIDAS = ["/dashboard", "/progreso", "/pagos", "/galeria"];
 
 // Rutas que NO deben ser accesibles si ya hay sesión (login)
 const RUTAS_PUBLICAS_SOLO = ["/login"];
@@ -50,6 +50,8 @@ export const config = {
     "/dashboard/:path*",
     "/progreso/:path*",
     "/pagos/:path*",
+    "/galeria/:path*",
+    "/galeria",
     "/login",
   ],
 };
