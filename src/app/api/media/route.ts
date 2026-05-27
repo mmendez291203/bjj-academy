@@ -7,8 +7,29 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { uploadBlob, listBlobs } from "@/lib/azure/blob";
+import { uploadBlob, listBlobs, deleteBlob } from "@/lib/azure/blob";
+import { auth } from "@/lib/auth";
 import type { ApiResponse } from "@/types";
+
+// ─── DELETE /api/media ────────────────────────────────────────────────────────
+export async function DELETE(req: NextRequest) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const session = await auth() as any;
+  const rol = session?.user?.rol ?? "";
+  if (!session?.user || !["admin", "instructor"].includes(rol)) {
+    return NextResponse.json({ success: false, error: "No autorizado" }, { status: 401 });
+  }
+
+  try {
+    const { url } = await req.json() as { url: string };
+    if (!url) return NextResponse.json({ success: false, error: "URL requerida" }, { status: 400 });
+    await deleteBlob(url);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("[DELETE /api/media]", error);
+    return NextResponse.json({ success: false, error: "Error al eliminar" }, { status: 500 });
+  }
+}
 
 // ─── POST /api/media ──────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {

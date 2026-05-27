@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, FileText, LayoutDashboard, Home, ClipboardList, BookOpen } from "lucide-react";
+import { Users, FileText, LayoutDashboard, Home, ClipboardList, BookOpen, Images } from "lucide-react";
 import { auth } from "@/lib/auth";
 
 const ADMIN_LINKS = [
@@ -8,6 +8,7 @@ const ADMIN_LINKS = [
   { href: "/admin/alumnos",       label: "Alumnos",       icon: Users           },
   { href: "/admin/inscripciones", label: "Inscripciones", icon: FileText        },
   { href: "/admin/blog",          label: "Blog",          icon: BookOpen        },
+  { href: "/admin/galeria",       label: "Galería",       icon: Images          },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
