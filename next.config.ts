@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // ─── Standalone: genera un paquete mínimo para deploy (~50MB vs ~500MB) ───
+  output: "standalone",
+
   // ─── Imágenes desde Azure Blob Storage ────────────────────────────────────
   images: {
     remotePatterns: [
