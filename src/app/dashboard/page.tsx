@@ -10,6 +10,7 @@ import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { findAll, findByQuery, CONTAINERS } from "@/lib/azure/cosmos";
 import { colorCinturon, capitalizar, formatFecha } from "@/lib/utils";
+import { redirect } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Trophy, Calendar, CreditCard, TrendingUp, Clock } from "lucide-react";
 import SignOutButton from "@/components/dashboard/SignOutButton";
@@ -94,13 +95,18 @@ export default async function DashboardPage() {
   const nombre  = session?.user?.name?.split(" ")[0] ?? "Alumno";
   const avatar  = session?.user?.image;
 
-  // Buscar datos del usuario en Cosmos DB
+  // Buscar datos del usuario en Cosmos DB (verificación en tiempo real)
   let usuario: UsuarioDB | null = null;
   try {
     const todos = await findAll<UsuarioDB>(CONTAINERS.USUARIOS);
     usuario = todos.find((u) => u.email === email) ?? null;
   } catch {
-    // Si falla, el dashboard muestra los datos de la sesión sin stats
+    // Si falla la conexión a DB, se muestran los datos de la sesión sin stats
+  }
+
+  // Bloqueo en tiempo real: si está inactivo en la DB, forzar logout
+  if (usuario && usuario.activo === false) {
+    redirect("/login?error=inactivo");
   }
 
   const cinturon          = usuario?.cinturon  ?? "blanco";

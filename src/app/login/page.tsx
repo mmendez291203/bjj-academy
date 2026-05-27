@@ -9,8 +9,8 @@ import { Loader2, AlertCircle } from "lucide-react";
 // ─── Mensajes de error por código ────────────────────────────────────────────
 const ERRORES: Record<string, { titulo: string; detalle: string }> = {
   inactivo: {
-    titulo:  "Cuenta inactiva",
-    detalle: "Tu cuenta ha sido desactivada. Contacta al instructor para más información.",
+    titulo:  "Cuenta no activada",
+    detalle: "Tu cuenta aún no ha sido activada. Si ya te inscribiste, contacta al instructor para que la habilite.",
   },
   OAuthAccountNotLinked: {
     titulo:  "Cuenta ya registrada",
@@ -104,7 +104,10 @@ function LoginContent() {
           )}
 
           <p className="text-xs text-gray-600 text-center mt-6">
-            Solo alumnos registrados tienen acceso al portal.
+            ¿Aún no eres alumno?{" "}
+            <a href="/inscripciones" className="text-gray-500 hover:text-gray-400 underline underline-offset-2">
+              Solicita tu clase gratis
+            </a>
           </p>
         </div>
       </div>

@@ -80,6 +80,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               token.activo = dbUser.activo !== false; // false solo si explícitamente inactivo
             } else {
               // Primera vez → crear documento con rol alumno
+              // Nuevo usuario — queda PENDIENTE hasta que el admin lo active
               await createItem("usuarios", {
                 id:                `usr-${crypto.randomUUID()}`,
                 email:             user.email ?? "",
@@ -89,11 +90,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 grados:            0,
                 clasesCompletadas: 0,
                 clasesEsteMes:     0,
-                activo:            true,
+                activo:            false, // el admin debe activarlo manualmente
                 creadoEn:          new Date().toISOString(),
               });
               token.rol    = "alumno";
-              token.activo = true;
+              token.activo = false;
             }
           } catch {
             token.rol = "alumno";
