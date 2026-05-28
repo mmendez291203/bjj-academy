@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import type { ApiResponse, FormInscripcion } from "@/types";
 import { createItem, CONTAINERS } from "@/lib/azure/cosmos";
-import { enviarNotificacionInscripcion } from "@/lib/email";
+import { enviarNotificacionInscripcion, enviarConfirmacionAlumno } from "@/lib/email";
 
 // ─── Schema de validación (igual que el frontend) ─────────────────────────────
 const inscripcionSchema = z.object({
@@ -63,9 +63,12 @@ export async function POST(
       );
     }
 
-    // 3. Enviar email de notificación al admin (no falla si el email falla)
+    // 3. Enviar emails (no bloquean la respuesta si fallan)
     enviarNotificacionInscripcion(data).catch((err) =>
-      console.error("[Email inscripción]", err)
+      console.error("[Email admin]", err)
+    );
+    enviarConfirmacionAlumno(data).catch((err) =>
+      console.error("[Email alumno]", err)
     );
 
     return NextResponse.json(
