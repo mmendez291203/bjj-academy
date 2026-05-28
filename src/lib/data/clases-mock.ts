@@ -71,15 +71,15 @@ export const clasesMock: Clase[] = [
   // ─── Viernes — Open Mat ──────────────────────────────────────────────────────
   {
     id: "cls-005",
-    nombre: "Open Mat — Gi / No-Gi",
-    tipo: "gi",
+    nombre: "Open Mat",
+    tipo: "no-gi",
     nivel: "todos",
     dia: "viernes",
-    horaInicio: "19:30",
+    horaInicio: "19:00",
     horaFin: "21:00",
     instructor: INSTRUCTOR,
     capacidadMaxima: 30,
-    descripcion: "Mat abierto. Gi y No-Gi bienvenidos. Sparring libre y técnica.",
+    descripcion: "Mat abierto para todos. Gi y No-Gi bienvenidos. Sparring libre.",
     activa: true,
   },
 ];
