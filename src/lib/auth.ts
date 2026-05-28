@@ -11,7 +11,7 @@ import NextAuth, { type DefaultSession } from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import type { Alumno } from "@/types";
-import { findAll, createItem } from "@/lib/azure/cosmos";
+import { findAll, findByQuery, createItem } from "@/lib/azure/cosmos";
 
 // ─── Extender tipos de NextAuth ───────────────────────────────────────────────
 declare module "next-auth" {
@@ -79,8 +79,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               token.rol    = dbUser.rol    ?? "alumno";
               token.activo = dbUser.activo !== false; // false solo si explícitamente inactivo
             } else {
-              // Primera vez → crear documento con rol alumno
-              // Nuevo usuario — queda PENDIENTE hasta que el admin lo active
+              // Primera vez → verificar si fue pre-aprobado vía inscripción
+              let preAprobado = false;
+              try {
+                const inscrips = await findByQuery<{ id: string; estado?: string }>(
+                  "inscripciones",
+                  "SELECT * FROM c WHERE c.email = @email AND c.estado = @estado",
+                  [
+                    { name: "@email",  value: user.email ?? "" },
+                    { name: "@estado", value: "admitido" },
+                  ]
+                );
+                preAprobado = inscrips.length > 0;
+              } catch {
+                // Si falla la consulta, continúa con activo: false
+              }
+
               await createItem("usuarios", {
                 id:                `usr-${crypto.randomUUID()}`,
                 email:             user.email ?? "",
@@ -90,11 +104,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 grados:            0,
                 clasesCompletadas: 0,
                 clasesEsteMes:     0,
-                activo:            false, // el admin debe activarlo manualmente
+                activo:            preAprobado, // true si el admin ya lo admitió
                 creadoEn:          new Date().toISOString(),
               });
               token.rol    = "alumno";
-              token.activo = false;
+              token.activo = preAprobado;
             }
           } catch {
             token.rol = "alumno";
