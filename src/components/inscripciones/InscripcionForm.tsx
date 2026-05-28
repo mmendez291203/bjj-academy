@@ -21,8 +21,8 @@ const schema = z.object({
     .email("Ingresa un email válido"),
   telefono: z
     .string()
-    .min(10, "El teléfono debe tener al menos 10 dígitos")
-    .regex(/^\+?[\d\s\-()]+$/, "Formato de teléfono inválido"),
+    .min(8, "El teléfono debe tener al menos 8 dígitos")
+    .regex(/^[\d\s\-()]+$/, "Solo números, sin código de país"),
   // React Hook Form envía el valor de <input type="number"> como string,
   // transformamos a número antes de validar.
   edad: z

@@ -134,7 +134,7 @@ export async function enviarNotificacionInscripcion(datos: DatosInscripcion) {
               <table cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="padding-right:8px;">
-                    <a href="https://wa.me/506${datos.telefono.replace(/\D/g, "")}"
+                    <a href="https://wa.me/506${datos.telefono.replace(/\D/g, "").replace(/^506/, "")}"
                        style="display:inline-block;background:#16a34a;color:#fff;font-size:13px;font-weight:700;text-decoration:none;padding:10px 20px;border-radius:8px;">
                       💬 WhatsApp
                     </a>

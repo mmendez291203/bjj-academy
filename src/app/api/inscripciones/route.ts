@@ -18,7 +18,7 @@ const inscripcionSchema = z.object({
   nombre:             z.string().min(2),
   apellido:           z.string().min(2),
   email:              z.string().email(),
-  telefono:           z.string().min(10),
+  telefono:           z.string().min(8),
   edad:               z.number().min(4).max(99),
   experienciaPrevia:  z.boolean(),
   claseInteres:       z.enum(["gi", "no-gi", "open-mat", "kids"]),
