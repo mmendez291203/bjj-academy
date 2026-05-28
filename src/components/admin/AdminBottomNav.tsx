@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Users, FileText, LayoutDashboard, Home, ClipboardList, BookOpen, Images } from "lucide-react";
+import { Users, FileText, LayoutDashboard, Home, ClipboardList, BookOpen, Images, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/admin/asistencia",    label: "Asist.",   icon: ClipboardList   },
   { href: "/admin/alumnos",       label: "Alumnos",  icon: Users           },
   { href: "/admin/inscripciones", label: "Inscrip.", icon: FileText        },
+  { href: "/admin/clases",        label: "Clases",   icon: CalendarDays    },
   { href: "/admin/blog",          label: "Blog",     icon: BookOpen        },
   { href: "/admin/galeria",       label: "Galería",  icon: Images          },
 ];

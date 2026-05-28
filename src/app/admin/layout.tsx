@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, FileText, LayoutDashboard, Home, ClipboardList, BookOpen, Images } from "lucide-react";
+import { Users, FileText, LayoutDashboard, Home, ClipboardList, BookOpen, Images, CalendarDays } from "lucide-react";
 import { auth } from "@/lib/auth";
 import AdminBottomNav from "@/components/admin/AdminBottomNav";
 
@@ -8,6 +8,7 @@ const ADMIN_LINKS = [
   { href: "/admin/asistencia",    label: "Asistencia",    icon: ClipboardList   },
   { href: "/admin/alumnos",       label: "Alumnos",       icon: Users           },
   { href: "/admin/inscripciones", label: "Inscripciones", icon: FileText        },
+  { href: "/admin/clases",        label: "Clases",        icon: CalendarDays    },
   { href: "/admin/blog",          label: "Blog",          icon: BookOpen        },
   { href: "/admin/galeria",       label: "Galería",       icon: Images          },
 ];
