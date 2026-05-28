@@ -2,9 +2,8 @@
 
 import { motion } from "framer-motion";
 import { InstagramIcon } from "@/components/ui/social-icons";
-import { instructoresMock } from "@/lib/data/clases-mock";
-import { colorCinturon, capitalizar } from "@/lib/utils";
-import { cn } from "@/lib/utils";
+
+const LOGO = "https://bjjacademymedia.blob.core.windows.net/media/e6ab8535-3299-4ed8-b259-c73b4b4c4e31.png";
 
 export default function Instructors() {
   return (
@@ -18,66 +17,59 @@ export default function Instructors() {
             viewport={{ once: true }}
             className="text-4xl font-bold text-white mb-4"
           >
-            Nuestros Instructores
+            Nuestro Instructor
           </motion.h2>
           <p className="text-gray-400 max-w-xl mx-auto">
-            Aprende de los mejores. Cada instructor tiene años de competencia
-            y enseñanza en BJJ de alto nivel.
+            Formado para enseñar, comprometido con tu progreso.
           </p>
         </div>
 
         <div className="flex justify-center">
-          <div className="grid grid-cols-1 gap-8 w-full max-w-sm">
-          {instructoresMock.map((instructor, i) => (
-            <motion.div
-              key={instructor.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="group rounded-2xl border border-white/5 bg-gray-950 overflow-hidden hover:border-red-800/30 transition-all"
-            >
-              {/* Foto del instructor */}
-              <div className="relative h-64 bg-gradient-to-br from-gray-900 to-gray-800">
-                <div className="absolute inset-0 flex items-center justify-center text-6xl">
-                  🥋
-                </div>
-                {/* Cinturón badge */}
-                <div className="absolute top-4 right-4">
-                  <span
-                    className={cn(
-                      "text-xs font-bold px-2 py-1 rounded-full",
-                      colorCinturon(instructor.cinturon)
-                    )}
-                  >
-                    {capitalizar(instructor.cinturon)}
-                    {instructor.galones > 0 && ` ·${"〡".repeat(instructor.galones)}`}
-                  </span>
-                </div>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="rounded-2xl border border-white/5 bg-gray-950 overflow-hidden max-w-sm w-full hover:border-red-800/30 transition-all"
+          >
+            {/* Foto placeholder con logo */}
+            <div className="relative h-72 bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={LOGO}
+                alt="RUNAJERABJJ"
+                className="w-28 h-28 object-contain opacity-20"
+              />
+              {/* Badge cinturón */}
+              <div className="absolute top-4 right-4 bg-yellow-700 text-yellow-100 text-xs font-bold px-3 py-1 rounded-full">
+                Cinturón Café
               </div>
+            </div>
 
-              {/* Info */}
-              <div className="p-6">
-                <h3 className="font-bold text-white text-lg mb-1">{instructor.nombre}</h3>
-                <p className="text-xs text-red-400 font-medium mb-3">{instructor.especialidad}</p>
-                <p className="text-sm text-gray-400 leading-relaxed mb-4">{instructor.bio}</p>
+            {/* Info */}
+            <div className="p-6">
+              <h3 className="font-bold text-white text-xl mb-1">
+                Carlos Alberto Donado Nadales
+              </h3>
+              <p className="text-xs text-red-400 font-semibold uppercase tracking-wider mb-4">
+                Instructor Principal · BJJ Gi & No-Gi
+              </p>
+              <p className="text-sm text-gray-400 leading-relaxed mb-5">
+                Cinturón café con sólida formación en Gi y No-Gi. Su enfoque de enseñanza
+                combina la técnica del alto rendimiento con la paciencia necesaria para
+                guiar a cada alumno en su proceso personal.
+              </p>
 
-                {/* Instagram — solo si tiene */}
-                {instructor.instagram && (
-                  <a
-                    href={`https://instagram.com/${instructor.instagram.replace("@","")}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-pink-400 transition-colors"
-                  >
-                    <InstagramIcon className="w-3.5 h-3.5" />
-                    {instructor.instagram}
-                  </a>
-                )}
-              </div>
-            </motion.div>
-          ))}
-          </div>
+              <a
+                href="https://instagram.com/runajerabjj"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-xs text-gray-500 hover:text-pink-400 transition-colors"
+              >
+                <InstagramIcon className="w-3.5 h-3.5" />
+                @runajerabjj
+              </a>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>

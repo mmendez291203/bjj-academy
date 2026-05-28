@@ -2,8 +2,27 @@
 
 import { motion } from "framer-motion";
 import { Quote } from "lucide-react";
-import { testimoniosMock } from "@/lib/data/clases-mock";
-import { colorCinturon, capitalizar, cn } from "@/lib/utils";
+
+const testimonios = [
+  {
+    id: 1,
+    texto: "Empecé sin ninguna experiencia y desde la primera clase me sentí en un lugar seguro. El instructor tiene mucha paciencia y el grupo te recibe muy bien.",
+    nombre: "Mario M.",
+    cinturon: "Cinturón Blanco · 2 grados",
+  },
+  {
+    id: 2,
+    texto: "Lo que más me gusta es que no importa tu nivel. Siempre hay algo nuevo que aprender y el ambiente hace que quieras volver cada día.",
+    nombre: "Alumno de la academia",
+    cinturon: "Cinturón Blanco",
+  },
+  {
+    id: 3,
+    texto: "El BJJ me cambió más allá del físico. Aprendí a mantener la calma en momentos difíciles, y eso lo aplico en todo. RUNAJERABJJ es mucho más que un gimnasio.",
+    nombre: "Alumno de la academia",
+    cinturon: "Cinturón Blanco",
+  },
+];
 
 export default function Testimonials() {
   return (
@@ -19,36 +38,30 @@ export default function Testimonials() {
           >
             Lo que dicen nuestros alumnos
           </motion.h2>
+          <p className="text-gray-400">Experiencias reales de quienes ya entrenan con nosotros.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {testimoniosMock.map((t, i) => (
+          {testimonios.map((t, i) => (
             <motion.div
               key={t.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="rounded-xl border border-white/5 bg-black/60 p-6 relative"
+              className="rounded-xl border border-white/5 bg-black/60 p-6 relative flex flex-col"
             >
-              <Quote className="w-8 h-8 text-red-900/60 mb-4" />
-              <p className="text-gray-300 text-sm leading-relaxed mb-6">
+              <Quote className="w-7 h-7 text-red-900/50 mb-4 shrink-0" />
+              <p className="text-gray-300 text-sm leading-relaxed mb-6 flex-1">
                 "{t.texto}"
               </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-lg">
-                  🥷
+              <div className="flex items-center gap-3 pt-4 border-t border-white/5">
+                <div className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center text-base shrink-0">
+                  🥋
                 </div>
                 <div>
-                  <p className="text-white text-sm font-medium">{t.nombre}</p>
-                  <span
-                    className={cn(
-                      "text-xs font-semibold px-2 py-0.5 rounded-full",
-                      colorCinturon(t.cinturon)
-                    )}
-                  >
-                    Cinturón {capitalizar(t.cinturon)}
-                  </span>
+                  <p className="text-white text-sm font-semibold">{t.nombre}</p>
+                  <p className="text-xs text-gray-600">{t.cinturon}</p>
                 </div>
               </div>
             </motion.div>

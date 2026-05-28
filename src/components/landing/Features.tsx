@@ -1,45 +1,38 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  Users,
-  Trophy,
-  Calendar,
-  Shield,
-  Zap,
-  Heart,
-} from "lucide-react";
+import { Users, Trophy, Calendar, Shield, Brain, Heart } from "lucide-react";
 
 const features = [
   {
+    icon: Brain,
+    titulo: "Superación personal",
+    desc:   "El BJJ entrena la mente tanto como el cuerpo. Cada clase te enseña a resolver problemas bajo presión y a mantener la calma en momentos difíciles.",
+  },
+  {
     icon: Shield,
-    titulo: "Ambiente seguro",
-    desc:   "Entrenamiento controlado con instructores certificados. Normas de higiene y respeto estrictas.",
+    titulo: "Ambiente seguro y respetuoso",
+    desc:   "Entrenamiento controlado con normas claras de higiene y respeto. Un lugar donde cualquier persona, sin importar su nivel, se siente bienvenida.",
   },
   {
     icon: Trophy,
-    titulo: "Equipo de competencia",
-    desc:   "Prepárate para torneos IBJJF, ADCC y locales con nuestro programa especializado.",
+    titulo: "Competencia y desarrollo",
+    desc:   "Preparamos a quienes quieren competir en torneos IBJJF y locales, pero también a quienes solo buscan crecer personal y físicamente.",
   },
   {
     icon: Calendar,
-    titulo: "Horarios flexibles",
-    desc:   "Clases mañana y noche de lunes a sábado. Encuentra el horario que se adapte a tu vida.",
-  },
-  {
-    icon: Users,
-    titulo: "Comunidad real",
-    desc:   "Más de 200 alumnos de todos los niveles. Un lugar donde hacerás amigos de por vida.",
-  },
-  {
-    icon: Zap,
-    titulo: "Resultados rápidos",
-    desc:   "Método estructurado que maximiza tu progreso. De blanco a azul en tiempo récord.",
+    titulo: "Horario consistente",
+    desc:   "Clases de lunes a viernes a las 7:30 PM. Gi, No-Gi y Open Mat. Un horario que te permite comprometerte con tu entrenamiento.",
   },
   {
     icon: Heart,
-    titulo: "Programa Kids",
-    desc:   "Clases para niños de 6 a 12 años. Disciplina, confianza y diversión en el tatami.",
+    titulo: "Para todos los niveles",
+    desc:   "Desde el primer día hasta cinturón negro. No importa si nunca has entrenado — aquí todos comenzamos desde cero.",
+  },
+  {
+    icon: Users,
+    titulo: "Comunidad que te impulsa",
+    desc:   "Entrenar BJJ crea vínculos reales. La academia es también una comunidad de personas que se apoyan dentro y fuera del tatami.",
   },
 ];
 
@@ -59,8 +52,8 @@ export default function Features() {
             ¿Por qué entrenar con nosotros?
           </motion.h2>
           <p className="text-gray-400 max-w-xl mx-auto">
-            No somos solo un gimnasio. Somos una familia dedicada a hacer crecer
-            tu juego y tu carácter.
+            El jiu-jitsu que enseñamos va más allá de las técnicas. Es una herramienta
+            de construcción personal.
           </p>
         </div>
 
@@ -75,9 +68,7 @@ export default function Features() {
               transition={{ delay: i * 0.08 }}
               className="group relative rounded-xl border border-white/5 bg-black/40 p-6 hover:border-red-800/40 transition-all"
             >
-              {/* Glow on hover */}
               <div className="absolute inset-0 rounded-xl bg-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-
               <div className="relative">
                 <div className="w-10 h-10 rounded-lg bg-red-900/30 border border-red-800/30 flex items-center justify-center mb-4">
                   <f.icon className="w-5 h-5 text-red-400" />
