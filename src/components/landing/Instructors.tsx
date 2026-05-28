@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { InstagramIcon } from "@/components/ui/social-icons";
 
-const LOGO = "https://bjjacademymedia.blob.core.windows.net/media/e6ab8535-3299-4ed8-b259-c73b4b4c4e31.png";
+const FOTO_CARLOS = "https://bjjacademymedia.blob.core.windows.net/media/81a26d94-d95e-41b1-9459-8ca0c7c5f730.jpeg";
 
 export default function Instructors() {
   return (
@@ -31,13 +31,13 @@ export default function Instructors() {
             viewport={{ once: true }}
             className="rounded-2xl border border-white/5 bg-gray-950 overflow-hidden max-w-sm w-full hover:border-red-800/30 transition-all"
           >
-            {/* Foto placeholder con logo */}
-            <div className="relative h-72 bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
+            {/* Foto */}
+            <div className="relative h-72 overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={LOGO}
-                alt="RUNAJERABJJ"
-                className="w-28 h-28 object-contain opacity-20"
+                src={FOTO_CARLOS}
+                alt="Carlos Alberto Donado Nadales"
+                className="w-full h-full object-cover object-top"
               />
               {/* Badge cinturón */}
               <div className="absolute top-4 right-4 bg-yellow-700 text-yellow-100 text-xs font-bold px-3 py-1 rounded-full">
