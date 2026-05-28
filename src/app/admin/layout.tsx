@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Users, FileText, LayoutDashboard, Home, ClipboardList, BookOpen, Images } from "lucide-react";
 import { auth } from "@/lib/auth";
+import AdminBottomNav from "@/components/admin/AdminBottomNav";
 
 const ADMIN_LINKS = [
   { href: "/admin",               label: "Resumen",       icon: LayoutDashboard },
@@ -51,25 +52,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </main>
 
       {/* ─── Bottom nav (móvil) ─────────────────────────────────────────── */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-950 border-t border-white/10 flex items-center justify-around px-2 py-2">
-        {ADMIN_LINKS.map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg text-gray-500 hover:text-white transition-colors min-w-0"
-          >
-            <Icon className="w-5 h-5 shrink-0" />
-            <span className="text-[10px] leading-tight truncate w-full text-center">{label}</span>
-          </Link>
-        ))}
-        <Link
-          href="/"
-          className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-400 transition-colors min-w-0"
-        >
-          <Home className="w-5 h-5 shrink-0" />
-          <span className="text-[10px] leading-tight">Sitio</span>
-        </Link>
-      </nav>
+      <AdminBottomNav />
 
     </div>
   );
