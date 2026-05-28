@@ -85,10 +85,34 @@ export default function Footer() {
 
         {/* ─── Bottom bar ─────────────────────────────────────────────────── */}
         <div className="mt-10 pt-6 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs">
-          <p>© {new Date().getFullYear()} {academy.name}. Todos los derechos reservados.</p>
-          <div className="flex gap-4">
-            <Link href="/privacidad" className="hover:text-white transition-colors">Privacidad</Link>
-            <Link href="/terminos"   className="hover:text-white transition-colors">Términos</Link>
+          <p className="text-gray-600">
+            Diseñado y desarrollado por{" "}
+            <a
+              href="https://www.linkedin.com/in/mariomendez2912/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-white transition-colors font-medium"
+            >
+              Mario Méndez
+            </a>
+          </p>
+          <div className="flex gap-4 text-gray-600">
+            <a
+              href="https://www.linkedin.com/in/mariomendez2912/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors"
+            >
+              LinkedIn
+            </a>
+            <a
+              href="https://www.upwork.com/freelancers/mariomendez"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors"
+            >
+              Upwork
+            </a>
           </div>
         </div>
       </div>
