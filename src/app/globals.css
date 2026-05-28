@@ -1,21 +1,29 @@
 @import "tailwindcss";
 
-/* ─── BJJ Academy — Paleta Navy + Rojo ─────────────────────────────────────
-   Inspirada en Gracie Barra: azul marino profundo como base,
-   rojo refinado como acento. Transmite autoridad y profesionalismo.
+/* ─── BJJ Academy — Negro + Rojo Sangre ────────────────────────────────────
+   Estilo academias premium: fondo negro carbón neutro,
+   rojo sangre oscuro como acento. Serio, limpio, profesional.
    ──────────────────────────────────────────────────────────────────────── */
 
 @theme {
-  /* Remapeamos los oscuros a la paleta navy */
-  --color-black:    #0a0f1e;   /* fondo principal de páginas   */
-  --color-gray-950: #0c1428;   /* cards, sidebar, nav          */
-  --color-gray-900: #111e38;   /* secciones alternadas         */
-  --color-gray-800: #1a2d4e;   /* bordes, hover states         */
-  --color-gray-700: #243a5e;   /* elementos secundarios        */
+  /* Fondos — negro carbón neutro */
+  --color-black:    #0a0a0a;   /* fondo principal de páginas  */
+  --color-gray-950: #141414;   /* cards, sidebar, nav         */
+  --color-gray-900: #1a1a1a;   /* secciones alternas          */
+  --color-gray-800: #222222;   /* hover states, bordes        */
+  --color-gray-700: #2e2e2e;   /* elementos secundarios       */
+
+  /* Rojo sangre — más oscuro y elegante */
+  --color-red-900:  #4a0a0a;
+  --color-red-800:  #7f1d1d;
+  --color-red-700:  #991b1b;
+  --color-red-600:  #b91c1c;
+  --color-red-500:  #dc2626;
+  --color-red-400:  #ef4444;
 }
 
 :root {
-  --background: #0a0f1e;
+  --background: #0a0a0a;
   --foreground: #ffffff;
 }
 
@@ -31,6 +39,6 @@ html {
 
 /* ─── Scrollbar personalizado ───────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #0a0f1e; }
-::-webkit-scrollbar-thumb { background: #b91c1c; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #dc2626; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-thumb { background: #991b1b; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #b91c1c; }
