@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
+
+// Carga dinámica para evitar problemas SSR con TipTap
+const RichEditor = dynamic(() => import("./RichEditor"), { ssr: false });
 
 type PostData = {
   titulo:           string;
@@ -156,18 +160,19 @@ export default function PostForm({ postId, initial }: Props) {
         )}
       </div>
 
-      {/* Contenido (HTML) */}
+      {/* Contenido — editor WYSIWYG */}
       <div>
         <label className={label}>
-          Contenido <span className="text-gray-600 normal-case">(HTML — usa &lt;h2&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;img src="..."&gt;)</span>
+          Contenido
         </label>
-        <textarea
-          rows={16}
+        <RichEditor
           value={form.contenido}
-          onChange={(e) => set("contenido", e.target.value)}
-          placeholder="<p>Escribe el contenido del artículo aquí...</p>"
-          className={cn(field, "resize-y font-mono text-xs leading-relaxed")}
+          onChange={(html) => set("contenido", html)}
+          placeholder="Escribe el contenido del artículo aquí..."
         />
+        <p className="mt-1.5 text-xs text-gray-600">
+          💡 Para insertar fotos usá el botón 🖼️ de la barra y pegá la URL desde la Galería del admin.
+        </p>
       </div>
 
       {/* Tags */}
