@@ -40,7 +40,7 @@ export type DiaSemana =
   | "domingo";
 
 export type NivelClase = "principiante" | "intermedio" | "avanzado" | "todos" | "kids";
-export type TipoClase = "gi" | "no-gi" | "wrestling" | "fitness" | "kids";
+export type TipoClase = "gi" | "no-gi" | "kids";
 
 export interface Clase {
   id: string;
