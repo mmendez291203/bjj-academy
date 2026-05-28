@@ -110,7 +110,8 @@ export default function AlumnosTable({ usuarios }: { usuarios: UsuarioAdmin[] })
     <>
       {/* ─── Tabla ─────────────────────────────────────────────────────────── */}
       <div className="rounded-xl border border-white/5 overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[700px]">
           <thead className="bg-gray-950 border-b border-white/5">
             <tr>
               {["Nombre", "Email", "Rol", "Cinturón", "Grados", "Clases", "Estado", ""].map((h) => (
@@ -176,6 +177,7 @@ export default function AlumnosTable({ usuarios }: { usuarios: UsuarioAdmin[] })
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* ─── Modal de edición ──────────────────────────────────────────────── */}
