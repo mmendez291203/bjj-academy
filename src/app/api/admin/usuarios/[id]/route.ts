@@ -24,9 +24,9 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // Verificar que el usuario es admin
-  const session = await auth();
-  if (!session || session.user?.rol !== "admin") {
+  const session = await auth() as any; // eslint-disable-line
+  const rol = session?.user?.rol ?? "";
+  if (!session?.user || !["admin", "instructor"].includes(rol)) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
