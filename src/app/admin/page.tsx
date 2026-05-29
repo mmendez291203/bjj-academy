@@ -13,10 +13,13 @@ export default async function AdminPage() {
     findAll(CONTAINERS.CLASES).catch(() => []),
   ]);
 
+  const pendientes = inscripciones.filter((i: any) => !i.estado || i.estado === "pendiente").length; // eslint-disable-line
+  const activos    = usuarios.filter((u: any) => u.activo !== false).length; // eslint-disable-line
+
   const stats = [
-    { label: "Inscripciones",  value: inscripciones.length, icon: FileText,  color: "text-blue-400",   href: "/admin/inscripciones" },
-    { label: "Alumnos",        value: usuarios.length,      icon: Users,     color: "text-green-400",  href: "/admin/alumnos"       },
-    { label: "Clases activas", value: clases.length,        icon: Calendar,  color: "text-red-400",    href: "/clases"              },
+    { label: "Inscripciones pendientes", value: pendientes,    icon: FileText, color: "text-blue-400",  href: "/admin/inscripciones" },
+    { label: "Alumnos activos",          value: activos,       icon: Users,    color: "text-green-400", href: "/admin/alumnos"       },
+    { label: "Clases activas",           value: clases.length, icon: Calendar, color: "text-red-400",   href: "/clases"              },
   ];
 
   return (
