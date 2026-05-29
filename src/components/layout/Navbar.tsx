@@ -28,6 +28,7 @@ export default function Navbar() {
   const rol          = (session as any)?.user?.rol ?? "";
   const esAdmin      = rol === "admin";
   const esInstructor = rol === "instructor";
+  const tienePanel   = esAdmin || esInstructor;
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5">
@@ -66,16 +67,9 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-3">
           {tieneSesion ? (
             <>
-              {/* Botón Admin — solo visible si rol=admin */}
-              {esAdmin && (
+              {tienePanel && (
                 <Link href="/admin" className="text-xs font-bold text-red-400 hover:text-red-300 border border-red-900/50 px-2.5 py-1 rounded-md transition-colors">
-                  ⚙️ Admin
-                </Link>
-              )}
-              {/* Botón Instructor — solo visible si rol=instructor */}
-              {esInstructor && (
-                <Link href="/admin/asistencia" className="text-xs font-bold text-orange-400 hover:text-orange-300 border border-orange-900/50 px-2.5 py-1 rounded-md transition-colors">
-                  📋 Asistencia
+                  ⚙️ {esAdmin ? "Admin" : "Panel"}
                 </Link>
               )}
               <Link href="/dashboard" className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors">
@@ -132,14 +126,11 @@ export default function Navbar() {
           <div className="pt-4 flex flex-col gap-3 border-t border-white/10">
             {tieneSesion ? (
               <>
-                {esAdmin && (
+                {tienePanel && (
                   <Link href="/admin" onClick={() => setOpen(false)}>
-                    <Button variant="outline" className="w-full border-red-900/50 text-red-400">⚙️ Admin</Button>
-                  </Link>
-                )}
-                {esInstructor && (
-                  <Link href="/admin/asistencia" onClick={() => setOpen(false)}>
-                    <Button variant="outline" className="w-full border-orange-900/50 text-orange-400">📋 Asistencia</Button>
+                    <Button variant="outline" className="w-full border-red-900/50 text-red-400">
+                      ⚙️ {esAdmin ? "Admin" : "Panel"}
+                    </Button>
                   </Link>
                 )}
                 <Link href="/dashboard" onClick={() => setOpen(false)}>
