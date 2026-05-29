@@ -10,6 +10,8 @@ import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { findAll, findByQuery, CONTAINERS } from "@/lib/azure/cosmos";
 import { colorCinturon, capitalizar, formatFecha } from "@/lib/utils";
+import { clasesMock } from "@/lib/data/clases-mock";
+import type { Clase } from "@/types";
 import { redirect } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Trophy, Calendar, CreditCard, TrendingUp, Clock } from "lucide-react";
@@ -56,15 +58,7 @@ function getProgresoNivel(cinturon: string, clases: number) {
   return { siguiente, porcentaje, clasesRestantes: restantes };
 }
 
-// ─── Horario semanal RUNAJERABJJ ─────────────────────────────────────────────
-const INSTRUCTOR = "Carlos A. Donado";
-const HORARIO = [
-  { dia: "Lunes",     hora: "7:30 PM", nombre: "BJJ Gi",              instructor: INSTRUCTOR },
-  { dia: "Martes",    hora: "7:30 PM", nombre: "BJJ No-Gi",           instructor: INSTRUCTOR },
-  { dia: "Miércoles", hora: "7:30 PM", nombre: "BJJ Gi",              instructor: INSTRUCTOR },
-  { dia: "Jueves",    hora: "7:30 PM", nombre: "BJJ No-Gi",           instructor: INSTRUCTOR },
-  { dia: "Viernes",   hora: "7:30 PM", nombre: "Open Mat — Gi/No-Gi", instructor: INSTRUCTOR },
-];
+const DIAS_ORDEN = ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
 
 // ─── Stat card ────────────────────────────────────────────────────────────────
 function StatCard({
@@ -115,6 +109,17 @@ export default async function DashboardPage() {
 
   // Clases completadas totales (campo del usuario, admin lo mantiene al registrar asistencia)
   const clasesCompletadas = usuario?.clasesCompletadas ?? 0;
+
+  // Cargar horario desde Cosmos DB con fallback a mock
+  let horario: Clase[] = [];
+  try {
+    const clasesDB = await findAll<Clase>(CONTAINERS.CLASES);
+    horario = (clasesDB.length > 0 ? clasesDB : clasesMock)
+      .filter((c) => c.activa !== false)
+      .sort((a, b) => DIAS_ORDEN.indexOf(a.dia) - DIAS_ORDEN.indexOf(b.dia));
+  } catch {
+    horario = clasesMock.sort((a, b) => DIAS_ORDEN.indexOf(a.dia) - DIAS_ORDEN.indexOf(b.dia));
+  }
 
   // Clases este mes: calculadas desde la tabla de asistencia (siempre precisas)
   const ahora     = new Date();
@@ -244,9 +249,9 @@ export default async function DashboardPage() {
         <div className="rounded-xl border border-white/5 bg-gray-950 p-6">
           <h2 className="text-lg font-bold text-white mb-5">📅 Horario semanal</h2>
           <div className="space-y-3">
-            {HORARIO.map((c, i) => (
+            {horario.map((c) => (
               <div
-                key={i}
+                key={c.id}
                 className="flex items-center gap-3 rounded-lg border border-white/5 bg-black/40 p-3"
               >
                 <div className="w-10 h-10 rounded-lg bg-red-900/30 flex items-center justify-center shrink-0">
@@ -254,10 +259,10 @@ export default async function DashboardPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-white truncate">{c.nombre}</p>
-                  <p className="text-xs text-gray-500">{c.instructor}</p>
+                  <p className="text-xs text-gray-500">{c.instructor ?? "RUNAJERABJJ"}</p>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-sm font-bold text-white">{c.hora}</p>
+                  <p className="text-sm font-bold text-white">{c.horaInicio}</p>
                   <p className="text-xs text-gray-500">{c.dia}</p>
                 </div>
               </div>
