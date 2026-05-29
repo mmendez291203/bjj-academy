@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatFecha } from "@/lib/utils";
-import { CheckCircle, Clock, UserCheck, XCircle, Loader2 } from "lucide-react";
+import { CheckCircle, Clock, UserCheck, XCircle, Loader2, Eye, EyeOff } from "lucide-react";
 
 type Inscripcion = {
   id: string;
@@ -11,8 +11,6 @@ type Inscripcion = {
   email: string;
   telefono?: string;
   claseInteres?: string;
-  experienciaPrevia?: boolean;
-  mensaje?: string;
   estado?: string;
   createdAt?: string;
   creadoEn?: string;
@@ -57,6 +55,7 @@ export default function InscripcionesPage() {
   const [admitiendo, setAdmitiendo]       = useState<string | null>(null);
   const [rechazando, setRechazando]       = useState<string | null>(null);
   const [feedback, setFeedback]           = useState<{ id: string; msg: string; ok: boolean } | null>(null);
+  const [verProcesadas, setVerProcesadas] = useState(false);
 
   useEffect(() => {
     fetch("/api/admin/inscripciones")
@@ -73,10 +72,13 @@ export default function InscripcionesPage() {
       const res  = await fetch(`/api/admin/inscripciones/${id}/admitir`, { method: "POST" });
       const json = await res.json();
       if (res.ok && json.success) {
-        setInscripciones((prev) =>
-          prev.map((ins) => (ins.id === id ? { ...ins, estado: "admitido" } : ins))
-        );
         setFeedback({ id, msg: json.mensaje, ok: true });
+        setTimeout(() => {
+          setInscripciones((prev) =>
+            prev.map((ins) => (ins.id === id ? { ...ins, estado: "admitido" } : ins))
+          );
+          setFeedback(null);
+        }, 1500);
       } else {
         setFeedback({ id, msg: json.error ?? "Error al admitir", ok: false });
       }
@@ -94,10 +96,13 @@ export default function InscripcionesPage() {
       const res  = await fetch(`/api/admin/inscripciones/${id}/rechazar`, { method: "POST" });
       const json = await res.json();
       if (res.ok && json.success) {
-        setInscripciones((prev) =>
-          prev.map((ins) => (ins.id === id ? { ...ins, estado: "rechazado" } : ins))
-        );
         setFeedback({ id, msg: json.mensaje, ok: false });
+        setTimeout(() => {
+          setInscripciones((prev) =>
+            prev.map((ins) => (ins.id === id ? { ...ins, estado: "rechazado" } : ins))
+          );
+          setFeedback(null);
+        }, 1500);
       } else {
         setFeedback({ id, msg: json.error ?? "Error al rechazar", ok: false });
       }
@@ -108,28 +113,48 @@ export default function InscripcionesPage() {
     }
   }
 
-  const total     = inscripciones.length;
-  const pendientes = inscripciones.filter((i) => i.estado !== "admitido").length;
-  const admitidos  = inscripciones.filter((i) => i.estado === "admitido").length;
+  const pendientes  = inscripciones.filter((i) => !i.estado || i.estado === "pendiente");
+  const admitidos   = inscripciones.filter((i) => i.estado === "admitido");
+  const rechazados  = inscripciones.filter((i) => i.estado === "rechazado");
+  const procesadas  = inscripciones.filter((i) => i.estado === "admitido" || i.estado === "rechazado");
+
+  const visibles = verProcesadas ? inscripciones : pendientes;
 
   return (
     <div className="p-6 md:p-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-extrabold text-white">Inscripciones</h1>
-        <p className="text-gray-400 mt-1">{total} solicitud{total !== 1 ? "es" : ""} recibida{total !== 1 ? "s" : ""}</p>
+        <p className="text-gray-400 mt-1">{inscripciones.length} solicitud{inscripciones.length !== 1 ? "es" : ""} en total</p>
 
-        {/* Stats rápidas */}
-        {total > 0 && (
-          <div className="flex gap-4 mt-4">
+        {/* Stats */}
+        {inscripciones.length > 0 && (
+          <div className="flex flex-wrap gap-3 mt-4">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-yellow-900/20 border border-yellow-800/30">
               <Clock className="w-4 h-4 text-yellow-500" />
-              <span className="text-xs font-semibold text-yellow-400">{pendientes} pendiente{pendientes !== 1 ? "s" : ""}</span>
+              <span className="text-xs font-semibold text-yellow-400">{pendientes.length} pendiente{pendientes.length !== 1 ? "s" : ""}</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-900/20 border border-green-800/30">
               <CheckCircle className="w-4 h-4 text-green-400" />
-              <span className="text-xs font-semibold text-green-400">{admitidos} admitido{admitidos !== 1 ? "s" : ""}</span>
+              <span className="text-xs font-semibold text-green-400">{admitidos.length} admitido{admitidos.length !== 1 ? "s" : ""}</span>
             </div>
+            {rechazados.length > 0 && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-900/20 border border-red-800/30">
+                <XCircle className="w-4 h-4 text-red-400" />
+                <span className="text-xs font-semibold text-red-400">{rechazados.length} rechazado{rechazados.length !== 1 ? "s" : ""}</span>
+              </div>
+            )}
+            {procesadas.length > 0 && (
+              <button
+                onClick={() => setVerProcesadas((v) => !v)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 border border-white/10 transition-colors"
+              >
+                {verProcesadas ? <EyeOff className="w-4 h-4 text-gray-400" /> : <Eye className="w-4 h-4 text-gray-400" />}
+                <span className="text-xs font-semibold text-gray-400">
+                  {verProcesadas ? "Ocultar procesadas" : "Ver todas"}
+                </span>
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -138,9 +163,18 @@ export default function InscripcionesPage() {
         <div className="flex justify-center py-20">
           <Loader2 className="w-6 h-6 text-gray-600 animate-spin" />
         </div>
-      ) : inscripciones.length === 0 ? (
+      ) : pendientes.length === 0 && !verProcesadas ? (
         <div className="text-center py-20 text-gray-600">
-          <p>No hay inscripciones todavía.</p>
+          <CheckCircle className="w-8 h-8 mx-auto mb-3 text-gray-700" />
+          <p>No hay solicitudes pendientes.</p>
+          {procesadas.length > 0 && (
+            <button
+              onClick={() => setVerProcesadas(true)}
+              className="mt-3 text-xs text-gray-500 hover:text-gray-300 underline transition-colors"
+            >
+              Ver {procesadas.length} solicitud{procesadas.length !== 1 ? "es" : ""} procesada{procesadas.length !== 1 ? "s" : ""}
+            </button>
+          )}
         </div>
       ) : (
         <div className="rounded-xl border border-white/5 overflow-hidden">
@@ -156,13 +190,16 @@ export default function InscripcionesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {inscripciones.map((ins) => {
-                  const yaAdmitido = ins.estado === "admitido";
+                {visibles.map((ins) => {
+                  const procesada = ins.estado === "admitido" || ins.estado === "rechazado";
                   const fecha = ins.createdAt ?? ins.creadoEn;
 
                   return (
                     <>
-                      <tr key={ins.id} className="hover:bg-white/[0.02] transition-colors">
+                      <tr
+                        key={ins.id}
+                        className={procesada ? "opacity-50 hover:opacity-70 transition-opacity" : "hover:bg-white/[0.02] transition-colors"}
+                      >
                         <td className="px-4 py-3 text-white font-medium">
                           {ins.nombre}{ins.apellido ? ` ${ins.apellido}` : ""}
                         </td>
@@ -182,7 +219,7 @@ export default function InscripcionesPage() {
                             : "—"}
                         </td>
                         <td className="px-4 py-3">
-                          {ins.estado === "admitido" || ins.estado === "rechazado" ? (
+                          {procesada ? (
                             <span className="text-xs text-gray-600 italic">—</span>
                           ) : (
                             <div className="flex items-center gap-2">
@@ -191,11 +228,7 @@ export default function InscripcionesPage() {
                                 disabled={admitiendo === ins.id || rechazando === ins.id}
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold transition-colors"
                               >
-                                {admitiendo === ins.id ? (
-                                  <Loader2 className="w-3 h-3 animate-spin" />
-                                ) : (
-                                  <UserCheck className="w-3 h-3" />
-                                )}
+                                {admitiendo === ins.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserCheck className="w-3 h-3" />}
                                 Admitir
                               </button>
                               <button
@@ -203,11 +236,7 @@ export default function InscripcionesPage() {
                                 disabled={admitiendo === ins.id || rechazando === ins.id}
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-400 hover:text-white text-xs font-semibold transition-colors"
                               >
-                                {rechazando === ins.id ? (
-                                  <Loader2 className="w-3 h-3 animate-spin" />
-                                ) : (
-                                  <XCircle className="w-3 h-3" />
-                                )}
+                                {rechazando === ins.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
                                 Rechazar
                               </button>
                             </div>
@@ -215,7 +244,6 @@ export default function InscripcionesPage() {
                         </td>
                       </tr>
 
-                      {/* Fila de feedback inline */}
                       {feedback?.id === ins.id && (
                         <tr key={`${ins.id}-feedback`}>
                           <td colSpan={7} className="px-4 py-2">
