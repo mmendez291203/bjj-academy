@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatFecha } from "@/lib/utils";
-import { CheckCircle, Clock, UserCheck, Loader2 } from "lucide-react";
+import { CheckCircle, Clock, UserCheck, XCircle, Loader2 } from "lucide-react";
 
 type Inscripcion = {
   id: string;
@@ -35,6 +35,14 @@ function EstadoBadge({ estado }: { estado?: string }) {
       </span>
     );
   }
+  if (estado === "rechazado") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-900/30 text-red-400 border border-red-800/40">
+        <XCircle className="w-3 h-3" />
+        Rechazado
+      </span>
+    );
+  }
   return (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-900/30 text-yellow-500 border border-yellow-800/40">
       <Clock className="w-3 h-3" />
@@ -47,6 +55,7 @@ export default function InscripcionesPage() {
   const [inscripciones, setInscripciones] = useState<Inscripcion[]>([]);
   const [loading, setLoading]             = useState(true);
   const [admitiendo, setAdmitiendo]       = useState<string | null>(null);
+  const [rechazando, setRechazando]       = useState<string | null>(null);
   const [feedback, setFeedback]           = useState<{ id: string; msg: string; ok: boolean } | null>(null);
 
   useEffect(() => {
@@ -75,6 +84,27 @@ export default function InscripcionesPage() {
       setFeedback({ id, msg: "Error de conexión", ok: false });
     } finally {
       setAdmitiendo(null);
+    }
+  }
+
+  async function rechazar(id: string) {
+    setRechazando(id);
+    setFeedback(null);
+    try {
+      const res  = await fetch(`/api/admin/inscripciones/${id}/rechazar`, { method: "POST" });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setInscripciones((prev) =>
+          prev.map((ins) => (ins.id === id ? { ...ins, estado: "rechazado" } : ins))
+        );
+        setFeedback({ id, msg: json.mensaje, ok: false });
+      } else {
+        setFeedback({ id, msg: json.error ?? "Error al rechazar", ok: false });
+      }
+    } catch {
+      setFeedback({ id, msg: "Error de conexión", ok: false });
+    } finally {
+      setRechazando(null);
     }
   }
 
@@ -152,21 +182,35 @@ export default function InscripcionesPage() {
                             : "—"}
                         </td>
                         <td className="px-4 py-3">
-                          {yaAdmitido ? (
+                          {ins.estado === "admitido" || ins.estado === "rechazado" ? (
                             <span className="text-xs text-gray-600 italic">—</span>
                           ) : (
-                            <button
-                              onClick={() => admitir(ins.id)}
-                              disabled={admitiendo === ins.id}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold transition-colors"
-                            >
-                              {admitiendo === ins.id ? (
-                                <Loader2 className="w-3 h-3 animate-spin" />
-                              ) : (
-                                <UserCheck className="w-3 h-3" />
-                              )}
-                              Admitir
-                            </button>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => admitir(ins.id)}
+                                disabled={admitiendo === ins.id || rechazando === ins.id}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold transition-colors"
+                              >
+                                {admitiendo === ins.id ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <UserCheck className="w-3 h-3" />
+                                )}
+                                Admitir
+                              </button>
+                              <button
+                                onClick={() => rechazar(ins.id)}
+                                disabled={admitiendo === ins.id || rechazando === ins.id}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-400 hover:text-white text-xs font-semibold transition-colors"
+                              >
+                                {rechazando === ins.id ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <XCircle className="w-3 h-3" />
+                                )}
+                                Rechazar
+                              </button>
+                            </div>
                           )}
                         </td>
                       </tr>

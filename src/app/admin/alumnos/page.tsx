@@ -1,10 +1,13 @@
 import { findAll, CONTAINERS } from "@/lib/azure/cosmos";
 import AlumnosTable, { type UsuarioAdmin } from "@/components/admin/AlumnosTable";
+import { auth } from "@/lib/auth";
 
 export const dynamic  = "force-dynamic";
 export const metadata = { title: "Alumnos — Admin" };
 
 export default async function AlumnosPage() {
+  const session = await auth() as any; // eslint-disable-line
+  const rolActual: string = session?.user?.rol ?? "";
   const usuarios = await findAll<UsuarioAdmin>(CONTAINERS.USUARIOS).catch(() => []);
 
   return (
@@ -23,7 +26,7 @@ export default async function AlumnosPage() {
           <p>No hay alumnos registrados todavía.</p>
         </div>
       ) : (
-        <AlumnosTable usuarios={usuarios} />
+        <AlumnosTable usuarios={usuarios} rolActual={rolActual} />
       )}
     </div>
   );

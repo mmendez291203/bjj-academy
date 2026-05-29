@@ -7,7 +7,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { X } from "lucide-react";
+import { X, Trash2 } from "lucide-react";
 import { cn, colorCinturon, capitalizar } from "@/lib/utils";
 
 export type UsuarioAdmin = {
@@ -43,8 +43,9 @@ function Grados({ n }: { n: number }) {
   );
 }
 
-export default function AlumnosTable({ usuarios }: { usuarios: UsuarioAdmin[] }) {
+export default function AlumnosTable({ usuarios, rolActual }: { usuarios: UsuarioAdmin[]; rolActual?: string }) {
   const router = useRouter();
+  const esAdmin = rolActual === "admin";
   const [editando, setEditando] = useState<UsuarioAdmin | null>(null);
   const [form, setForm] = useState<FormState>({
     rol: "alumno", cinturon: "blanco", grados: 0, clasesCompletadas: 0,
@@ -70,6 +71,20 @@ export default function AlumnosTable({ usuarios }: { usuarios: UsuarioAdmin[] })
   function cerrarModal() {
     setEditando(null);
     setError("");
+  }
+
+  async function eliminar(u: UsuarioAdmin) {
+    if (!confirm(`¿Eliminar a ${u.nombre ?? u.email}? Esta acción no se puede deshacer.`)) return;
+    try {
+      const res = await fetch(`/api/admin/usuarios/${u.id}`, { method: "DELETE" });
+      if (res.ok) router.refresh();
+      else {
+        const data = await res.json();
+        alert(data.error ?? "Error al eliminar");
+      }
+    } catch {
+      alert("Error de conexión");
+    }
   }
 
   async function guardar() {
@@ -166,12 +181,23 @@ export default function AlumnosTable({ usuarios }: { usuarios: UsuarioAdmin[] })
                   </span>
                 </td>
                 <td className="px-4 py-3">
-                  <button
-                    onClick={() => abrirModal(u)}
-                    className="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors"
-                  >
-                    Editar
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => abrirModal(u)}
+                      className="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                    >
+                      Editar
+                    </button>
+                    {esAdmin && (
+                      <button
+                        onClick={() => eliminar(u)}
+                        className="text-gray-600 hover:text-red-400 transition-colors"
+                        title="Eliminar usuario"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

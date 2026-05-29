@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { updateItem, CONTAINERS } from "@/lib/azure/cosmos";
+import { updateItem, deleteItem, CONTAINERS } from "@/lib/azure/cosmos";
 import { z } from "zod";
 
 const schema = z.object({
@@ -47,6 +47,23 @@ export async function PATCH(
     return NextResponse.json({ success: true, data: updated });
   } catch (e) {
     console.error("[PATCH /api/admin/usuarios]", e);
+    return NextResponse.json({ error: String(e) }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth() as any; // eslint-disable-line
+  if (session?.user?.rol !== "admin")
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+  const { id } = await params;
+  try {
+    await deleteItem(CONTAINERS.USUARIOS, id);
+    return NextResponse.json({ success: true });
+  } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
