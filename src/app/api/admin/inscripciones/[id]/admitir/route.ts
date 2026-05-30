@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { findAll, updateItem, CONTAINERS } from "@/lib/azure/cosmos";
+import { findAll, findByQuery, createItem, updateItem, CONTAINERS } from "@/lib/azure/cosmos";
+import type { PerfilHijo } from "@/types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function checkAdmin(session: any) {
@@ -18,26 +19,73 @@ export async function POST(
 
   const { id } = await params;
 
-  // 1. Buscar la inscripción
   const inscripciones = await findAll<{
-    id: string; email: string; nombre: string; apellido?: string; estado?: string;
+    id: string; tipo?: string; nombre: string; apellido?: string;
+    email: string; estado?: string;
   }>(CONTAINERS.INSCRIPCIONES);
 
   const inscripcion = inscripciones.find((i) => i.id === id);
   if (!inscripcion)
     return NextResponse.json({ error: "Inscripción no encontrada" }, { status: 404 });
 
-  // 2. Marcar inscripción como admitida
   await updateItem(CONTAINERS.INSCRIPCIONES, id, { estado: "admitido" } as any); // eslint-disable-line
 
-  // 3. Buscar si el usuario ya existe en Cosmos DB (ya hizo login con Google)
-  const usuarios = await findAll<{ id: string; email: string; activo?: boolean }>(
-    CONTAINERS.USUARIOS
-  );
-  const usuario = usuarios.find((u) => u.email === inscripcion.email);
+  // ── Kids: crear/actualizar perfil en cuenta del padre ─────────────────────
+  if (inscripcion.tipo === "kids") {
+    const emailPapa = inscripcion.email;
+    const nombreHijo = `${inscripcion.nombre}${inscripcion.apellido ? " " + inscripcion.apellido : ""}`;
+
+    const nuevoPerfil: PerfilHijo = {
+      id:                `perfil-${crypto.randomUUID()}`,
+      nombre:            nombreHijo,
+      cinturon:          "blanco",
+      grados:            0,
+      clasesCompletadas: 0,
+      fechaInicio:       new Date().toISOString().slice(0, 10),
+      proximoPago:       null,
+    };
+
+    const usuarios = await findByQuery<{ id: string; email: string; rol?: string; perfiles?: PerfilHijo[] }>(
+      CONTAINERS.USUARIOS,
+      "SELECT * FROM c WHERE c.email = @email",
+      [{ name: "@email", value: emailPapa }]
+    );
+    const padre = usuarios[0];
+
+    if (padre) {
+      const perfilesActuales = padre.perfiles ?? [];
+      await updateItem(CONTAINERS.USUARIOS, padre.id, {
+        rol:      "padre",
+        activo:   true,
+        perfiles: [...perfilesActuales, nuevoPerfil],
+      } as any); // eslint-disable-line
+      return NextResponse.json({
+        success: true,
+        mensaje: `✅ Perfil de ${inscripcion.nombre} agregado a la cuenta de ${emailPapa}.`,
+      });
+    }
+
+    // No tiene cuenta aún → crearla como padre
+    await createItem(CONTAINERS.USUARIOS, {
+      id:       `usr-${crypto.randomUUID()}`,
+      email:    emailPapa,
+      nombre:   emailPapa,
+      rol:      "padre",
+      activo:   true,
+      perfiles: [nuevoPerfil],
+      creadoEn: new Date().toISOString(),
+    });
+    return NextResponse.json({
+      success: true,
+      mensaje: `✅ Perfil de ${inscripcion.nombre} creado. El padre podrá verlo al iniciar sesión con ${emailPapa}.`,
+    });
+  }
+
+  // ── Adulto: activar cuenta normal ─────────────────────────────────────────
+  const usuarios = await findAll<{ id: string; email: string; activo?: boolean }>(CONTAINERS.USUARIOS);
+  const usuario  = usuarios.find((u) => u.email === inscripcion.email);
 
   if (usuario) {
-    // Ya tiene cuenta → activarlo directamente
     await updateItem(CONTAINERS.USUARIOS, usuario.id, { activo: true } as any); // eslint-disable-line
     return NextResponse.json({
       success: true,
@@ -46,8 +94,6 @@ export async function POST(
     });
   }
 
-  // 4. No tiene cuenta aún → la inscripción queda como "admitido"
-  //    Cuando haga login por primera vez, auth.ts lo detecta y lo activa solo
   return NextResponse.json({
     success: true,
     activado: false,

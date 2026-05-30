@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { formatFecha } from "@/lib/utils";
-import { CheckCircle, Clock, UserCheck, XCircle, Loader2, Eye, EyeOff } from "lucide-react";
+import { CheckCircle, Clock, UserCheck, XCircle, Loader2, Eye, EyeOff, Baby } from "lucide-react";
 
 type Inscripcion = {
   id: string;
+  tipo?: "adulto" | "kids";
   nombre: string;
   apellido?: string;
   email: string;
@@ -201,7 +202,14 @@ export default function InscripcionesPage() {
                         className={procesada ? "opacity-50 hover:opacity-70 transition-opacity" : "hover:bg-white/[0.02] transition-colors"}
                       >
                         <td className="px-4 py-3 text-white font-medium">
-                          {ins.nombre}{ins.apellido ? ` ${ins.apellido}` : ""}
+                          <div className="flex items-center gap-2">
+                            {ins.nombre}{ins.apellido ? ` ${ins.apellido}` : ""}
+                            {ins.tipo === "kids" && (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-purple-900/40 text-purple-400 border border-purple-800/40">
+                                <Baby className="w-3 h-3" /> Kids
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-gray-400 text-xs">{ins.email ?? "—"}</td>
                         <td className="px-4 py-3 text-gray-400">{ins.telefono ?? "—"}</td>
@@ -229,7 +237,7 @@ export default function InscripcionesPage() {
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold transition-colors"
                               >
                                 {admitiendo === ins.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserCheck className="w-3 h-3" />}
-                                Admitir
+                                {ins.tipo === "kids" ? "Crear perfil" : "Admitir"}
                               </button>
                               <button
                                 onClick={() => rechazar(ins.id)}

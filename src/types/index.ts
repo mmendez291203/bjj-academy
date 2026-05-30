@@ -5,10 +5,24 @@
 // ─── Alumno ──────────────────────────────────────────────────────────────────
 export type Cinturon =
   | "blanco"
+  | "gris-blanco" | "gris" | "gris-negro"
+  | "amarillo-blanco" | "amarillo" | "amarillo-negro"
+  | "naranja-blanco" | "naranja" | "naranja-negro"
+  | "verde-blanco" | "verde" | "verde-negro"
   | "azul"
   | "morado"
   | "cafe"
   | "negro";
+
+export type PerfilHijo = {
+  id: string;
+  nombre: string;
+  cinturon: string;
+  grados: number;
+  clasesCompletadas: number;
+  fechaInicio?: string;
+  proximoPago?: string | null;
+};
 
 export type Galón = 0 | 1 | 2 | 3 | 4;
 
@@ -24,7 +38,7 @@ export interface Alumno {
   fechaInicio: string;             // ISO 8601
   activo: boolean;
   foto?: string;                   // URL de Azure Blob
-  rol: "alumno" | "instructor" | "admin";
+  rol: "alumno" | "instructor" | "admin" | "padre";
   createdAt: string;
   updatedAt: string;
 }
@@ -82,6 +96,16 @@ export interface FormInscripcion {
   claseInteres: TipoClase;
   mensaje?: string;
   comoNosEncontraste?: string;
+  tipo?: "adulto" | "kids";
+}
+
+export interface FormInscripcionKids {
+  tipo: "kids";
+  nombreHijo: string;
+  apellido: string;
+  emailPapa: string;
+  telefono: string;
+  edadHijo: number;
 }
 
 // ─── Blog ─────────────────────────────────────────────────────────────────────
