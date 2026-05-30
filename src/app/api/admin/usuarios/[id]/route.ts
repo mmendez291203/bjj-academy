@@ -1,13 +1,8 @@
-/**
- * PATCH /api/admin/usuarios/[id]
- * Actualiza los datos de un alumno (cinturón, grados, clases, pago, estado).
- * Solo accesible por admins — validado con la sesión de NextAuth.
- */
-
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { updateItem, deleteItem, CONTAINERS } from "@/lib/azure/cosmos";
+import { findByQuery, updateItem, deleteItem, CONTAINERS } from "@/lib/azure/cosmos";
 import { z } from "zod";
+import type { PerfilHijo } from "@/types";
 
 const schema = z.object({
   cinturon:          z.string().optional(),
@@ -18,6 +13,8 @@ const schema = z.object({
   activo:            z.boolean().optional(),
   nombre:            z.string().optional(),
   rol:               z.enum(["alumno", "instructor", "admin"]).optional(),
+  // Para editar un perfil de hijo dentro de un padre
+  perfilId:          z.string().optional(),
 });
 
 export async function PATCH(
@@ -25,25 +22,42 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth() as any; // eslint-disable-line
-  const rol = session?.user?.rol ?? "";
-  if (!session?.user || !["admin", "instructor"].includes(rol)) {
+  const rolSesion = session?.user?.rol ?? "";
+  if (!session?.user || !["admin", "instructor"].includes(rolSesion)) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
   const { id } = await params;
-
-  const body = await req.json();
+  const body   = await req.json();
   const result = schema.safeParse(body);
   if (!result.success) {
-    return NextResponse.json(
-      { error: "Datos inválidos", detail: result.error.message },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Datos inválidos", detail: result.error.message }, { status: 400 });
   }
 
+  const { perfilId, ...campos } = result.data;
+
   try {
+    // ── Editar perfil de hijo (dentro de un documento padre) ───────────────
+    if (perfilId) {
+      const padres = await findByQuery<{ id: string; perfiles?: PerfilHijo[] }>(
+        CONTAINERS.USUARIOS,
+        "SELECT * FROM c WHERE c.id = @id",
+        [{ name: "@id", value: id }]
+      );
+      const padre = padres[0];
+      if (!padre) return NextResponse.json({ error: "Padre no encontrado" }, { status: 404 });
+
+      const perfiles = (padre.perfiles ?? []).map((p) =>
+        p.id === perfilId ? { ...p, ...campos } : p
+      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updated = await updateItem(CONTAINERS.USUARIOS, id, { perfiles } as any);
+      return NextResponse.json({ success: true, data: updated });
+    }
+
+    // ── Editar usuario normal ───────────────────────────────────────────────
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updated = await updateItem(CONTAINERS.USUARIOS, id, result.data as any);
+    const updated = await updateItem(CONTAINERS.USUARIOS, id, campos as any);
     return NextResponse.json({ success: true, data: updated });
   } catch (e) {
     console.error("[PATCH /api/admin/usuarios]", e);

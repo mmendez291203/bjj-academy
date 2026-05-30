@@ -7,7 +7,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { X, Trash2 } from "lucide-react";
+import { X, Trash2, Baby } from "lucide-react";
 import { cn, colorCinturon, capitalizar } from "@/lib/utils";
 
 export type UsuarioAdmin = {
@@ -21,6 +21,10 @@ export type UsuarioAdmin = {
   clasesEsteMes?: number;
   proximoPago?: string | null;
   activo?: boolean;
+  // Campos internos para perfiles de hijos (no se guardan en DB directamente)
+  _tipo?: "perfil";
+  _padreId?: string;
+  _perfilId?: string;
 };
 
 type FormState = {
@@ -114,21 +118,27 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
     if (!editando) return;
     setGuardando(true);
     setError("");
+    const esPerfil = editando._tipo === "perfil";
+    // Para perfiles de hijos: PATCH al padre con perfilId incluido
+    const targetId = esPerfil ? (editando._padreId ?? editando.id) : editando.id;
     try {
-      const res = await fetch(`/api/admin/usuarios/${editando.id}`, {
+      const body: Record<string, unknown> = {
+        cinturon:          form.cinturon,
+        grados:            Number(form.grados),
+        clasesCompletadas: Number(form.clasesCompletadas),
+        proximoPago:       form.proximoPago ? new Date(form.proximoPago + "T12:00:00").toISOString() : null,
+      };
+      if (esPerfil) {
+        body.perfilId = editando._perfilId;
+      } else {
+        body.rol          = form.rol;
+        body.clasesEsteMes = Number(form.clasesEsteMes);
+        body.activo       = form.activo;
+      }
+      const res = await fetch(`/api/admin/usuarios/${targetId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          rol:               form.rol,
-          cinturon:          form.cinturon,
-          grados:            Number(form.grados),
-          clasesCompletadas: Number(form.clasesCompletadas),
-          clasesEsteMes:     Number(form.clasesEsteMes),
-          proximoPago:       form.proximoPago
-            ? new Date(form.proximoPago + "T12:00:00").toISOString()
-            : null,
-          activo: form.activo,
-        }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -165,8 +175,21 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
           <tbody className="divide-y divide-white/5">
             {usuarios.map((u) => (
               <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
-                <td className="px-4 py-3 text-white font-medium">{u.nombre ?? "—"}</td>
-                <td className="px-4 py-3 text-gray-400 text-xs">{u.email}</td>
+                <td className="px-4 py-3 text-white font-medium">
+                  <div className="flex items-center gap-2">
+                    {u.nombre ?? "—"}
+                    {u._tipo === "perfil" && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-purple-900/40 text-purple-400 border border-purple-800/40">
+                        <Baby className="w-3 h-3" /> Kids
+                      </span>
+                    )}
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-gray-400 text-xs">
+                  {u._tipo === "perfil" ? (
+                    <span className="text-gray-600">papá: {u.email}</span>
+                  ) : u.email}
+                </td>
                 <td className="px-4 py-3">
                   <span className={cn(
                     "text-xs font-bold px-2 py-0.5 rounded-full",
@@ -235,20 +258,24 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
           <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-md p-6 shadow-2xl">
             {/* Header */}
             <div className="flex items-start justify-between mb-1">
-              <h2 className="text-lg font-bold text-white">Editar alumno</h2>
-              <button
-                onClick={cerrarModal}
-                className="text-gray-500 hover:text-white transition-colors mt-0.5"
-              >
+              <div>
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                  {editando._tipo === "perfil" && <Baby className="w-4 h-4 text-purple-400" />}
+                  {editando._tipo === "perfil" ? "Editar perfil (Kids)" : "Editar alumno"}
+                </h2>
+              </div>
+              <button onClick={cerrarModal} className="text-gray-500 hover:text-white transition-colors mt-0.5">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <p className="text-sm text-gray-500 mb-6">
               {editando.nombre ?? editando.email}
+              {editando._tipo === "perfil" && <span className="text-gray-600 ml-1">· papá: {editando.email}</span>}
             </p>
 
             <div className="space-y-4">
-              {/* Rol */}
+              {/* Rol — solo para alumnos normales */}
+              {editando._tipo !== "perfil" && (
               <div>
                 <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">
                   Rol en el sistema
@@ -266,6 +293,7 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
                   ⚠️ El cambio aplica la próxima vez que el usuario cierre e inicie sesión.
                 </p>
               </div>
+              )}
 
               {/* Cinturón */}
               <div>
@@ -319,7 +347,8 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
                 />
               </div>
 
-              {/* Clases este mes */}
+              {/* Clases este mes — solo alumnos normales */}
+              {editando._tipo !== "perfil" && (
               <div>
                 <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">
                   Clases este mes
@@ -332,6 +361,7 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
                   className="w-full bg-gray-950 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-white/30"
                 />
               </div>
+              )}
 
               {/* Próximo pago */}
               <div>
@@ -346,7 +376,8 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
                 />
               </div>
 
-              {/* Activo toggle */}
+              {/* Activo toggle — solo alumnos normales */}
+              {editando._tipo !== "perfil" && (
               <div className="flex items-center justify-between pt-1">
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Alumno activo
@@ -359,14 +390,10 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
                     form.activo ? "bg-green-600" : "bg-gray-700"
                   )}
                 >
-                  <span
-                    className={cn(
-                      "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-                      form.activo ? "translate-x-6" : "translate-x-1"
-                    )}
-                  />
+                  <span className={cn("inline-block h-4 w-4 transform rounded-full bg-white transition-transform", form.activo ? "translate-x-6" : "translate-x-1")} />
                 </button>
               </div>
+              )}
             </div>
 
             {/* Error */}
