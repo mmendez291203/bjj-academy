@@ -37,13 +37,42 @@ type UsuarioDB = {
 };
 
 // ─── Lógica de cinturones ─────────────────────────────────────────────────────
-const BELT_ORDER   = ["blanco", "azul", "morado", "cafe", "negro"] as const;
+const BELT_ORDER = [
+  "blanco",
+  "gris-blanco", "gris", "gris-negro",
+  "amarillo-blanco", "amarillo", "amarillo-negro",
+  "naranja-blanco", "naranja", "naranja-negro",
+  "verde-blanco", "verde", "verde-negro",
+  "azul", "morado", "cafe", "negro",
+] as const;
+
 const BELT_DISPLAY: Record<string, string> = {
-  blanco: "Blanco", azul: "Azul", morado: "Morado", cafe: "Café", negro: "Negro",
+  blanco:            "Blanco",
+  "gris-blanco":     "Gris / Blanco",
+  gris:              "Gris",
+  "gris-negro":      "Gris / Negro",
+  "amarillo-blanco": "Amarillo / Blanco",
+  amarillo:          "Amarillo",
+  "amarillo-negro":  "Amarillo / Negro",
+  "naranja-blanco":  "Naranja / Blanco",
+  naranja:           "Naranja",
+  "naranja-negro":   "Naranja / Negro",
+  "verde-blanco":    "Verde / Blanco",
+  verde:             "Verde",
+  "verde-negro":     "Verde / Negro",
+  azul:              "Azul",
+  morado:            "Morado",
+  cafe:              "Café",
+  negro:             "Negro",
 };
-// Clases mínimas aproximadas para cada cinturón (referencia BJJ)
+
 const CLASES_PARA_NEXT: Record<string, number> = {
-  blanco: 150, azul: 300, morado: 300, cafe: 300, negro: 0,
+  blanco:            40,
+  "gris-blanco":     40,  gris: 40,  "gris-negro": 40,
+  "amarillo-blanco": 40,  amarillo: 40,  "amarillo-negro": 40,
+  "naranja-blanco":  40,  naranja: 40,   "naranja-negro": 40,
+  "verde-blanco":    40,  verde: 40,     "verde-negro": 40,
+  azul: 300, morado: 300, cafe: 300, negro: 0,
 };
 
 function getProgresoNivel(cinturon: string, clases: number) {

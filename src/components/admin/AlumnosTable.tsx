@@ -33,7 +33,30 @@ type FormState = {
   activo: boolean;
 };
 
-const CINTURONES = ["blanco", "azul", "morado", "cafe", "negro"] as const;
+const CINTURONES: { value: string; label: string; grupo: string }[] = [
+  // Adultos
+  { value: "blanco",          label: "Blanco",          grupo: "Adultos" },
+  { value: "azul",            label: "Azul",            grupo: "Adultos" },
+  { value: "morado",          label: "Morado",          grupo: "Adultos" },
+  { value: "cafe",            label: "Café",            grupo: "Adultos" },
+  { value: "negro",           label: "Negro",           grupo: "Adultos" },
+  // Niños — Gris
+  { value: "gris-blanco",     label: "Gris / Blanco",   grupo: "Niños" },
+  { value: "gris",            label: "Gris",            grupo: "Niños" },
+  { value: "gris-negro",      label: "Gris / Negro",    grupo: "Niños" },
+  // Niños — Amarillo
+  { value: "amarillo-blanco", label: "Amarillo / Blanco", grupo: "Niños" },
+  { value: "amarillo",        label: "Amarillo",        grupo: "Niños" },
+  { value: "amarillo-negro",  label: "Amarillo / Negro", grupo: "Niños" },
+  // Niños — Naranja
+  { value: "naranja-blanco",  label: "Naranja / Blanco", grupo: "Niños" },
+  { value: "naranja",         label: "Naranja",         grupo: "Niños" },
+  { value: "naranja-negro",   label: "Naranja / Negro", grupo: "Niños" },
+  // Niños — Verde
+  { value: "verde-blanco",    label: "Verde / Blanco",  grupo: "Niños" },
+  { value: "verde",           label: "Verde",           grupo: "Niños" },
+  { value: "verde-negro",     label: "Verde / Negro",   grupo: "Niños" },
+];
 
 function Grados({ n }: { n: number }) {
   return (
@@ -160,7 +183,7 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
                       "text-xs font-bold px-2 py-0.5 rounded-full",
                       colorCinturon(u.cinturon)
                     )}>
-                      {capitalizar(u.cinturon)}
+                      {CINTURONES.find((c) => c.value === u.cinturon)?.label ?? capitalizar(u.cinturon)}
                     </span>
                   ) : "—"}
                 </td>
@@ -254,8 +277,12 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
                   onChange={(e) => setForm((f) => ({ ...f, cinturon: e.target.value }))}
                   className="w-full bg-gray-950 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-white/30"
                 >
-                  {CINTURONES.map((c) => (
-                    <option key={c} value={c}>{capitalizar(c)}</option>
+                  {["Adultos", "Niños"].map((grupo) => (
+                    <optgroup key={grupo} label={`── ${grupo} ──`}>
+                      {CINTURONES.filter((c) => c.grupo === grupo).map((c) => (
+                        <option key={c.value} value={c.value}>{c.label}</option>
+                      ))}
+                    </optgroup>
                   ))}
                 </select>
               </div>

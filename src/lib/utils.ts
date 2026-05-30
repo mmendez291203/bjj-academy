@@ -37,11 +37,28 @@ export function formatHora(hora24: string): string {
  */
 export function colorCinturon(cinturon: string): string {
   const colores: Record<string, string> = {
-    blanco: "bg-white text-gray-900 border border-gray-300",
-    azul:   "bg-blue-600 text-white",
-    morado: "bg-purple-600 text-white",
-    cafe:   "bg-amber-800 text-white",
-    negro:  "bg-gray-900 text-white",
+    // Adultos
+    blanco:          "bg-white text-gray-900 border border-gray-300",
+    azul:            "bg-blue-600 text-white",
+    morado:          "bg-purple-600 text-white",
+    cafe:            "bg-amber-800 text-white",
+    negro:           "bg-gray-900 text-white border border-gray-700",
+    // Niños — gris
+    "gris-blanco":   "bg-gray-300 text-gray-900",
+    gris:            "bg-gray-400 text-gray-900",
+    "gris-negro":    "bg-gray-500 text-white",
+    // Niños — amarillo
+    "amarillo-blanco": "bg-yellow-300 text-gray-900",
+    amarillo:          "bg-yellow-400 text-gray-900",
+    "amarillo-negro":  "bg-yellow-500 text-gray-900",
+    // Niños — naranja
+    "naranja-blanco":  "bg-orange-300 text-gray-900",
+    naranja:           "bg-orange-500 text-white",
+    "naranja-negro":   "bg-orange-600 text-white",
+    // Niños — verde
+    "verde-blanco":    "bg-green-300 text-gray-900",
+    verde:             "bg-green-500 text-white",
+    "verde-negro":     "bg-green-700 text-white",
   };
   return colores[cinturon] ?? "bg-gray-200 text-gray-700";
 }
