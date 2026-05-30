@@ -125,7 +125,13 @@ export async function deleteItem(
   id: string
 ): Promise<void> {
   const container = await getContainer(containerId);
-  await container.item(id, id).delete();
+  // Buscar el documento primero para confirmar que existe y obtener su id exacto
+  const { resources } = await container.items
+    .query({ query: "SELECT * FROM c WHERE c.id = @id", parameters: [{ name: "@id", value: id }] })
+    .fetchAll();
+  if (resources.length === 0) throw new Error(`Item ${id} no encontrado en ${containerId}`);
+  const doc = resources[0];
+  await container.item(doc.id, doc.id).delete();
 }
 
 // ─── Containers específicos del dominio ──────────────────────────────────────
