@@ -11,7 +11,6 @@ import { cn } from "@/lib/utils";
 import { Trophy, Calendar, CreditCard, TrendingUp, Clock } from "lucide-react";
 import SignOutButton from "@/components/dashboard/SignOutButton";
 import { cookies } from "next/headers";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Mi Dashboard",
@@ -117,7 +116,7 @@ function DashboardUI({
           <div className="mb-6 flex items-center gap-3 flex-wrap">
             <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Viendo a:</span>
             {perfiles.map((p) => (
-              <Link
+              <a
                 key={p.id}
                 href={`/api/dashboard/select-perfil?id=${p.id}`}
                 className={cn(
@@ -128,7 +127,7 @@ function DashboardUI({
                 )}
               >
                 {p.nombre}
-              </Link>
+              </a>
             ))}
           </div>
         )}
