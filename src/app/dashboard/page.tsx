@@ -86,6 +86,19 @@ function StatCard({ icon: Icon, label, value, sub, color = "text-red-400" }: {
   );
 }
 
+type MesStat = { label: string; count: number };
+
+function getMonthlyStats(registros: { fecha: string }[]): MesStat[] {
+  const now = new Date();
+  return Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const label = d.toLocaleDateString("es-MX", { month: "short" });
+    const count = registros.filter((r) => r.fecha.startsWith(key)).length;
+    return { label, count };
+  });
+}
+
 type DashboardUIProps = {
   nombre: string;
   email: string;
@@ -100,12 +113,13 @@ type DashboardUIProps = {
   fechaInicio?: string;
   perfiles?: PerfilHijo[];
   perfilActual?: PerfilHijo;
+  historialMensual?: MesStat[];
 };
 
 function DashboardUI({
   nombre, email, avatar, cinturon, grados,
   clasesCompletadas, clasesEsteMes, proximoPago,
-  progreso, horario, fechaInicio, perfiles, perfilActual,
+  progreso, horario, fechaInicio, perfiles, perfilActual, historialMensual,
 }: DashboardUIProps) {
   return (
     <div className="min-h-screen bg-black pt-24 pb-16">
@@ -196,6 +210,32 @@ function DashboardUI({
           </div>
         )}
 
+        {/* ─── Historial mensual ───────────────────────────────────────── */}
+        {historialMensual && historialMensual.some((m) => m.count > 0) && (
+          <div className="rounded-xl border border-white/5 bg-gray-950 p-5 mb-8">
+            <h2 className="text-sm font-bold text-white mb-4">📊 Asistencia por mes</h2>
+            {(() => {
+              const max = Math.max(...historialMensual.map((m) => m.count), 1);
+              return (
+                <div className="space-y-2.5">
+                  {historialMensual.map((m) => (
+                    <div key={m.label} className="flex items-center gap-3">
+                      <span className="text-xs text-gray-500 capitalize w-8 shrink-0">{m.label}</span>
+                      <div className="flex-1 bg-gray-800 rounded-full h-2">
+                        <div
+                          className="bg-gradient-to-r from-red-600 to-red-400 h-2 rounded-full transition-all"
+                          style={{ width: `${(m.count / max) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-bold text-white w-4 text-right shrink-0">{m.count}</span>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
         {/* ─── Horario semanal ─────────────────────────────────────────── */}
         <div className="rounded-xl border border-white/5 bg-gray-950 p-6">
           <h2 className="text-lg font-bold text-white mb-5">📅 Horario semanal</h2>
@@ -264,6 +304,17 @@ export default async function DashboardPage() {
     const horario = await horarioFallback();
     const progreso = getProgresoNivel(perfil.cinturon ?? "blanco", perfil.clasesCompletadas ?? 0);
 
+    // Historial de asistencia del hijo por alumnoId = perfilId
+    let historialMensual;
+    try {
+      const registros = await findByQuery<{ fecha: string }>(
+        CONTAINERS.ASISTENCIA,
+        "SELECT c.fecha FROM c WHERE c.alumnoId = @id",
+        [{ name: "@id", value: perfil.id }]
+      );
+      historialMensual = getMonthlyStats(registros);
+    } catch { /* omitir */ }
+
     return <DashboardUI
       nombre={perfil.nombre} email={email} avatar={avatar}
       cinturon={perfil.cinturon ?? "blanco"} grados={perfil.grados ?? 0}
@@ -271,6 +322,7 @@ export default async function DashboardPage() {
       proximoPago={perfil.proximoPago ?? null} progreso={progreso}
       horario={horario} fechaInicio={perfil.fechaInicio}
       perfiles={perfiles} perfilActual={perfil}
+      historialMensual={historialMensual}
     />;
   }
 
@@ -306,11 +358,25 @@ export default async function DashboardPage() {
 
   const progreso = getProgresoNivel(cinturon, clasesCompletadas);
 
+  // Historial mensual para alumno normal por alumnoId = usuario.id
+  let historialMensual;
+  try {
+    if (usuario?.id) {
+      const registros = await findByQuery<{ fecha: string }>(
+        CONTAINERS.ASISTENCIA,
+        "SELECT c.fecha FROM c WHERE c.alumnoId = @id",
+        [{ name: "@id", value: usuario.id }]
+      );
+      historialMensual = getMonthlyStats(registros);
+    }
+  } catch { /* omitir */ }
+
   return <DashboardUI
     nombre={nombre} email={email} avatar={avatar}
     cinturon={cinturon} grados={grados}
     clasesCompletadas={clasesCompletadas} clasesEsteMes={clasesEsteMes}
     proximoPago={proximoPago} progreso={progreso}
     horario={horario} fechaInicio={usuario?.fechaInicio}
+    historialMensual={historialMensual}
   />;
 }

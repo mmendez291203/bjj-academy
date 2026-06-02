@@ -7,8 +7,21 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { X, Trash2, Baby } from "lucide-react";
+import { X, Trash2, Baby, CalendarDays } from "lucide-react";
 import { cn, colorCinturon, capitalizar } from "@/lib/utils";
+
+type AsistenciaRec = { id: string; fecha: string; tipo: string };
+
+function getMonthlyStats(registros: AsistenciaRec[]) {
+  const now = new Date();
+  return Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const label = d.toLocaleDateString("es-MX", { month: "short", year: "2-digit" });
+    const count = registros.filter((r) => r.fecha.startsWith(key)).length;
+    return { key, label, count };
+  });
+}
 
 export type UsuarioAdmin = {
   id: string;
@@ -80,6 +93,9 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
   });
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
+  const [tab, setTab] = useState<"editar" | "historial">("editar");
+  const [historial, setHistorial] = useState<AsistenciaRec[] | null>(null);
+  const [cargandoHistorial, setCargandoHistorial] = useState(false);
 
   function abrirModal(u: UsuarioAdmin) {
     setEditando(u);
@@ -93,11 +109,35 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
       activo:            u.activo !== false,
     });
     setError("");
+    setTab("editar");
+    setHistorial(null);
   }
 
   function cerrarModal() {
     setEditando(null);
     setError("");
+    setTab("editar");
+    setHistorial(null);
+  }
+
+  async function cargarHistorial(alumnoId: string) {
+    setCargandoHistorial(true);
+    try {
+      const res = await fetch(`/api/admin/asistencia/alumno?alumnoId=${alumnoId}`);
+      const data = await res.json();
+      setHistorial(data.success ? data.data : []);
+    } catch {
+      setHistorial([]);
+    } finally {
+      setCargandoHistorial(false);
+    }
+  }
+
+  function switchTab(t: "editar" | "historial") {
+    setTab(t);
+    if (t === "historial" && historial === null && editando) {
+      cargarHistorial(editando.id);
+    }
   }
 
   async function eliminar(u: UsuarioAdmin) {
@@ -255,25 +295,94 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
       {/* ─── Modal de edición ──────────────────────────────────────────────── */}
       {editando && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-          <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-md p-6 shadow-2xl">
+          <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-lg p-6 shadow-2xl">
             {/* Header */}
             <div className="flex items-start justify-between mb-1">
               <div>
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
                   {editando._tipo === "perfil" && <Baby className="w-4 h-4 text-purple-400" />}
-                  {editando._tipo === "perfil" ? "Editar perfil (Kids)" : "Editar alumno"}
+                  {editando.nombre ?? editando.email}
                 </h2>
               </div>
               <button onClick={cerrarModal} className="text-gray-500 hover:text-white transition-colors mt-0.5">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <p className="text-sm text-gray-500 mb-6">
-              {editando.nombre ?? editando.email}
-              {editando._tipo === "perfil" && <span className="text-gray-600 ml-1">· papá: {editando.email}</span>}
+            <p className="text-xs text-gray-600 mb-4">
+              {editando._tipo === "perfil" ? `Kids · papá: ${editando.email}` : editando.email}
             </p>
 
-            <div className="space-y-4">
+            {/* Tabs */}
+            <div className="flex gap-1 mb-6 bg-gray-950 rounded-lg p-1">
+              {(["editar", "historial"] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => switchTab(t)}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs font-semibold transition-all",
+                    tab === t ? "bg-gray-800 text-white" : "text-gray-500 hover:text-gray-300"
+                  )}
+                >
+                  {t === "historial" && <CalendarDays className="w-3.5 h-3.5" />}
+                  {t === "editar" ? "Editar" : "Historial de asistencia"}
+                </button>
+              ))}
+            </div>
+
+            {/* ── Tab: Historial ───────────────────────────── */}
+            {tab === "historial" && (
+              <div className="min-h-[200px]">
+                {cargandoHistorial ? (
+                  <p className="text-sm text-gray-500 text-center py-10">Cargando historial…</p>
+                ) : historial === null ? null : historial.length === 0 ? (
+                  <p className="text-sm text-gray-600 text-center py-10">Sin registros de asistencia.</p>
+                ) : (
+                  <div className="space-y-5">
+                    {/* Barras mensuales */}
+                    <div>
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Últimos 6 meses</p>
+                      {(() => {
+                        const stats = getMonthlyStats(historial);
+                        const max = Math.max(...stats.map((s) => s.count), 1);
+                        return (
+                          <div className="space-y-2">
+                            {stats.map((s) => (
+                              <div key={s.key} className="flex items-center gap-3">
+                                <span className="text-xs text-gray-500 w-14 shrink-0 capitalize">{s.label}</span>
+                                <div className="flex-1 bg-gray-800 rounded-full h-2">
+                                  <div
+                                    className="bg-red-500 h-2 rounded-full transition-all"
+                                    style={{ width: `${(s.count / max) * 100}%` }}
+                                  />
+                                </div>
+                                <span className="text-xs font-bold text-white w-5 text-right shrink-0">{s.count}</span>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                    {/* Lista de clases recientes */}
+                    <div>
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Clases recientes</p>
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                        {historial.slice(0, 20).map((r) => (
+                          <div key={r.id} className="flex items-center justify-between rounded-lg bg-gray-950 px-3 py-2">
+                            <span className="text-xs text-gray-400">{r.fecha}</span>
+                            <span className="text-xs font-semibold uppercase text-red-400 bg-red-900/20 px-2 py-0.5 rounded-full">
+                              {r.tipo}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Tab: Editar ──────────────────────────────── */}
+            {tab === "editar" && <div className="space-y-4">
               {/* Rol — solo para alumnos normales */}
               {editando._tipo !== "perfil" && (
               <div>
@@ -394,10 +503,10 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
                 </button>
               </div>
               )}
-            </div>
+            </div>}
 
             {/* Error */}
-            {error && (
+            {error && tab === "editar" && (
               <p className="mt-4 text-xs text-red-400 bg-red-900/20 border border-red-900/30 rounded-lg px-3 py-2">
                 {error}
               </p>
@@ -411,13 +520,15 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
               >
                 Cancelar
               </button>
-              <button
-                onClick={guardar}
-                disabled={guardando}
-                className="flex-1 px-4 py-2 rounded-lg bg-white text-black text-sm font-semibold hover:bg-gray-100 disabled:opacity-50 transition-colors"
-              >
-                {guardando ? "Guardando…" : "Guardar cambios"}
-              </button>
+              {tab === "editar" && (
+                <button
+                  onClick={guardar}
+                  disabled={guardando}
+                  className="flex-1 px-4 py-2 rounded-lg bg-white text-black text-sm font-semibold hover:bg-gray-100 disabled:opacity-50 transition-colors"
+                >
+                  {guardando ? "Guardando…" : "Guardar cambios"}
+                </button>
+              )}
             </div>
           </div>
         </div>
