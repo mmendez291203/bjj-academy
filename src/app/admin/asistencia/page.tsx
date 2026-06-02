@@ -20,6 +20,10 @@ type Alumno = {
   cinturon?: string;
   grados?: number;
   activo?: boolean;
+  rol?: string;
+  perfiles?: { id: string; nombre: string; cinturon?: string; grados?: number }[];
+  _padreId?: string;
+  _perfilId?: string;
 };
 
 type AsistenciaDoc = {
@@ -32,13 +36,34 @@ type AsistenciaDoc = {
 };
 
 export default async function AsistenciaPage() {
-  const [alumnos, ultimasClases] = await Promise.all([
+  const [todosUsuarios, ultimasClases] = await Promise.all([
     findAll<Alumno>(CONTAINERS.USUARIOS).catch(() => []),
     findByQuery<AsistenciaDoc>(
       CONTAINERS.ASISTENCIA,
       "SELECT TOP 30 * FROM c ORDER BY c.creadoEn DESC"
     ).catch(() => []),
   ]);
+
+  // Expandir padres en filas individuales por hijo
+  const alumnos: Alumno[] = [];
+  for (const u of todosUsuarios) {
+    if (u.rol === "padre" && u.perfiles?.length) {
+      for (const p of u.perfiles) {
+        alumnos.push({
+          id:        p.id,
+          email:     u.email,
+          nombre:    p.nombre,
+          cinturon:  p.cinturon,
+          grados:    p.grados,
+          activo:    true,
+          _padreId:  u.id,
+          _perfilId: p.id,
+        });
+      }
+    } else {
+      alumnos.push(u);
+    }
+  }
 
   // Fecha de hoy en formato YYYY-MM-DD (zona horaria del servidor)
   const hoy = new Date().toISOString().slice(0, 10);

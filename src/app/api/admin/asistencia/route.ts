@@ -23,9 +23,11 @@ const schema = z.object({
   tipo:  z.enum(["gi", "no-gi", "open-mat", "kids"]),
   alumnos: z.array(
     z.object({
-      id:     z.string(),
-      email:  z.string().email(),
-      nombre: z.string(),
+      id:        z.string(),
+      email:     z.string().email(),
+      nombre:    z.string(),
+      _padreId:  z.string().optional(),
+      _perfilId: z.string().optional(),
     })
   ).min(1, "Selecciona al menos un alumno"),
 });
@@ -99,17 +101,37 @@ export async function POST(req: NextRequest) {
     };
     await createItem(CONTAINERS.ASISTENCIA, doc);
 
-    // Incrementar clasesCompletadas en el documento del usuario
+    // Incrementar clasesCompletadas
     try {
-      const usuarios = await findByQuery<UsuarioDoc>(
-        CONTAINERS.USUARIOS,
-        "SELECT * FROM c WHERE c.email = @email",
-        [{ name: "@email", value: alumno.email }]
-      );
-      if (usuarios.length > 0) {
-        const u = usuarios[0];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await updateItem(CONTAINERS.USUARIOS, u.id, { clasesCompletadas: (u.clasesCompletadas ?? 0) + 1 } as any);
+      if (alumno._padreId && alumno._perfilId) {
+        // Kid: actualizar dentro de perfiles[] del padre
+        const padres = await findByQuery<{ id: string; perfiles?: { id: string; clasesCompletadas?: number }[] }>(
+          CONTAINERS.USUARIOS,
+          "SELECT * FROM c WHERE c.id = @id",
+          [{ name: "@id", value: alumno._padreId }]
+        );
+        if (padres.length > 0) {
+          const padre = padres[0];
+          const perfiles = (padre.perfiles ?? []).map((p) =>
+            p.id === alumno._perfilId
+              ? { ...p, clasesCompletadas: (p.clasesCompletadas ?? 0) + 1 }
+              : p
+          );
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await updateItem(CONTAINERS.USUARIOS, padre.id, { perfiles } as any);
+        }
+      } else {
+        // Alumno normal: actualizar campo top-level
+        const usuarios = await findByQuery<UsuarioDoc>(
+          CONTAINERS.USUARIOS,
+          "SELECT * FROM c WHERE c.email = @email",
+          [{ name: "@email", value: alumno.email }]
+        );
+        if (usuarios.length > 0) {
+          const u = usuarios[0];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await updateItem(CONTAINERS.USUARIOS, u.id, { clasesCompletadas: (u.clasesCompletadas ?? 0) + 1 } as any);
+        }
       }
     } catch (e) {
       console.error("[asistencia] Error actualizando clasesCompletadas:", e);

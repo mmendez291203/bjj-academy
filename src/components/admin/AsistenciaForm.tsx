@@ -17,6 +17,8 @@ type Alumno = {
   cinturon?: string;
   grados?: number;
   activo?: boolean;
+  _padreId?: string;
+  _perfilId?: string;
 };
 
 type Props = {
@@ -71,7 +73,13 @@ export default function AsistenciaForm({ alumnos, fechaHoy }: Props) {
 
     const alumnosSeleccionados = alumnosActivos
       .filter((a) => seleccion.has(a.id))
-      .map((a) => ({ id: a.id, email: a.email, nombre: a.nombre ?? a.email }));
+      .map((a) => ({
+        id:        a.id,
+        email:     a.email,
+        nombre:    a.nombre ?? a.email,
+        ...(a._padreId  && { _padreId:  a._padreId }),
+        ...(a._perfilId && { _perfilId: a._perfilId }),
+      }));
 
     try {
       const res = await fetch("/api/admin/asistencia", {
