@@ -9,19 +9,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { X, Trash2, Baby, CalendarDays } from "lucide-react";
 import { cn, colorCinturon, capitalizar } from "@/lib/utils";
+import AttendanceCalendar from "@/components/dashboard/AttendanceCalendar";
 
 type AsistenciaRec = { id: string; fecha: string; tipo: string };
-
-function getMonthlyStats(registros: AsistenciaRec[]) {
-  const now = new Date();
-  return Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    const label = d.toLocaleDateString("es-MX", { month: "short", year: "2-digit" });
-    const count = registros.filter((r) => r.fecha.startsWith(key)).length;
-    return { key, label, count };
-  });
-}
 
 export type UsuarioAdmin = {
   id: string;
@@ -357,46 +347,11 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
                 ) : historial === null ? null : historial.length === 0 ? (
                   <p className="text-sm text-gray-600 text-center py-10">Sin registros de asistencia.</p>
                 ) : (
-                  <div className="space-y-5">
-                    {/* Barras mensuales */}
-                    <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Últimos 6 meses</p>
-                      {(() => {
-                        const stats = getMonthlyStats(historial);
-                        const max = Math.max(...stats.map((s) => s.count), 1);
-                        return (
-                          <div className="space-y-2">
-                            {stats.map((s) => (
-                              <div key={s.key} className="flex items-center gap-3">
-                                <span className="text-xs text-gray-500 w-14 shrink-0 capitalize">{s.label}</span>
-                                <div className="flex-1 bg-gray-800 rounded-full h-2">
-                                  <div
-                                    className="bg-red-500 h-2 rounded-full transition-all"
-                                    style={{ width: `${(s.count / max) * 100}%` }}
-                                  />
-                                </div>
-                                <span className="text-xs font-bold text-white w-5 text-right shrink-0">{s.count}</span>
-                              </div>
-                            ))}
-                          </div>
-                        );
-                      })()}
-                    </div>
-                    {/* Lista de clases recientes */}
-                    <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Clases recientes</p>
-                      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                        {historial.slice(0, 20).map((r) => (
-                          <div key={r.id} className="flex items-center justify-between rounded-lg bg-gray-950 px-3 py-2">
-                            <span className="text-xs text-gray-400">{r.fecha}</span>
-                            <span className="text-xs font-semibold uppercase text-red-400 bg-red-900/20 px-2 py-0.5 rounded-full">
-                              {r.tipo}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                  <AttendanceCalendar
+                    registros={historial}
+                    graduaciones={editando?.historialGraduaciones ?? []}
+                    anio={new Date().getFullYear()}
+                  />
                 )}
               </div>
             )}
