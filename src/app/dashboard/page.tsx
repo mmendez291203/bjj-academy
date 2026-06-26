@@ -89,6 +89,28 @@ function StatCard({ icon: Icon, label, value, sub, color = "text-red-400" }: {
 
 type Graduacion = { fecha: string; cinturonNuevo: string; gradosNuevo: number };
 
+function proximoPagoActivo(fechaGuardada: string | null | undefined): string | null {
+  if (!fechaGuardada) return null;
+  const base = new Date(fechaGuardada);
+  if (isNaN(base.getTime())) return null;
+  const dia = base.getUTCDate();
+  const hoy = new Date();
+  hoy.setUTCHours(0, 0, 0, 0);
+  let candidato = new Date(base);
+  candidato.setUTCHours(0, 0, 0, 0);
+  while (candidato <= hoy) {
+    candidato.setUTCMonth(candidato.getUTCMonth() + 1);
+    // Ajustar si el mes no tiene el día (ej: 31 en febrero)
+    const mesTarget = candidato.getUTCMonth();
+    candidato.setUTCDate(dia);
+    if (candidato.getUTCMonth() !== mesTarget) {
+      // El día no existe en ese mes, usar el último día del mes
+      candidato.setUTCDate(0);
+    }
+  }
+  return candidato.toISOString();
+}
+
 type DashboardUIProps = {
   nombre: string;
   email: string;
@@ -299,7 +321,7 @@ export default async function DashboardPage() {
       nombre={perfil.nombre} email={email} avatar={avatar}
       cinturon={perfil.cinturon ?? "blanco"} grados={perfil.grados ?? 0}
       clasesCompletadas={perfil.clasesCompletadas ?? 0} clasesEsteMes={0}
-      proximoPago={perfil.proximoPago ?? null} progreso={progreso}
+      proximoPago={proximoPagoActivo(perfil.proximoPago)} progreso={progreso}
       horario={horario} fechaInicio={perfil.fechaInicio}
       perfiles={perfiles} perfilActual={perfil}
       registrosAnio={registrosAnio} graduaciones={graduaciones} anio={anio}
@@ -319,7 +341,7 @@ export default async function DashboardPage() {
 
   const cinturon          = usuario?.cinturon          ?? "blanco";
   const grados            = usuario?.grados            ?? 0;
-  const proximoPago       = usuario?.proximoPago       ?? null;
+  const proximoPago       = proximoPagoActivo(usuario?.proximoPago);
   const clasesCompletadas = usuario?.clasesCompletadas ?? 0;
 
   const horario = await horarioFallback();
