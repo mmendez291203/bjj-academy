@@ -48,8 +48,12 @@ export default function AsistenciaForm({ alumnos, fechaHoy }: Props) {
   const [tipo,      setTipo]      = useState<string>("gi");
   const [seleccion, setSeleccion] = useState<Set<string>>(new Set());
   const [resultado, setResultado] = useState<Resultado | null>(null);
+  const [categoria, setCategoria] = useState<"adultos" | "kids">("adultos");
 
   const alumnosActivos = alumnos.filter((a) => a.activo !== false);
+  const alumnosFiltrados = alumnosActivos.filter((a) =>
+    categoria === "kids" ? !!a._perfilId : !a._perfilId
+  );
 
   function toggleAlumno(id: string) {
     setSeleccion((prev) => {
@@ -60,10 +64,10 @@ export default function AsistenciaForm({ alumnos, fechaHoy }: Props) {
   }
 
   function toggleTodos() {
-    if (seleccion.size === alumnosActivos.length) {
+    if (seleccion.size === alumnosFiltrados.length) {
       setSeleccion(new Set());
     } else {
-      setSeleccion(new Set(alumnosActivos.map((a) => a.id)));
+      setSeleccion(new Set(alumnosFiltrados.map((a) => a.id)));
     }
   }
 
@@ -112,6 +116,22 @@ export default function AsistenciaForm({ alumnos, fechaHoy }: Props) {
   return (
     <div className="space-y-6">
 
+      {/* ─── Tabs Adultos / Kids ───────────────────────────────────────── */}
+      <div className="flex gap-1 bg-gray-900 rounded-lg p-1">
+        {(["adultos", "kids"] as const).map((cat) => (
+          <button
+            key={cat}
+            onClick={() => { setCategoria(cat); setSeleccion(new Set()); setResultado(null); }}
+            className={cn(
+              "flex-1 py-1.5 rounded-md text-xs font-semibold capitalize transition-all",
+              categoria === cat ? "bg-gray-700 text-white" : "text-gray-500 hover:text-gray-300"
+            )}
+          >
+            {cat === "adultos" ? "Adultos" : "Kids"}
+          </button>
+        ))}
+      </div>
+
       {/* ─── Fecha y tipo ──────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
@@ -152,17 +172,17 @@ export default function AsistenciaForm({ alumnos, fechaHoy }: Props) {
             onClick={toggleTodos}
             className="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors"
           >
-            {seleccion.size === alumnosActivos.length ? "Desmarcar todos" : "Marcar todos"}
+            {seleccion.size === alumnosFiltrados.length ? "Desmarcar todos" : "Marcar todos"}
           </button>
         </div>
 
         <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-          {alumnosActivos.length === 0 ? (
+          {alumnosFiltrados.length === 0 ? (
             <p className="text-sm text-gray-600 text-center py-8">
-              No hay alumnos activos registrados.
+              No hay alumnos {categoria === "kids" ? "kids" : "adultos"} activos.
             </p>
           ) : (
-            alumnosActivos.map((alumno) => {
+            alumnosFiltrados.map((alumno) => {
               const activo = seleccion.has(alumno.id);
               return (
                 <button

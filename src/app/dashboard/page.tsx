@@ -10,6 +10,7 @@ import { redirect } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Trophy, Calendar, CreditCard, TrendingUp, Clock } from "lucide-react";
 import SignOutButton from "@/components/dashboard/SignOutButton";
+import AttendanceCalendar from "@/components/dashboard/AttendanceCalendar";
 import { cookies } from "next/headers";
 
 export const metadata: Metadata = {
@@ -87,6 +88,7 @@ function StatCard({ icon: Icon, label, value, sub, color = "text-red-400" }: {
 }
 
 type MesStat = { label: string; count: number };
+type Graduacion = { fecha: string; cinturonNuevo: string; gradosNuevo: number };
 
 function getMonthlyStats(registros: { fecha: string }[]): MesStat[] {
   const now = new Date();
@@ -114,12 +116,16 @@ type DashboardUIProps = {
   perfiles?: PerfilHijo[];
   perfilActual?: PerfilHijo;
   historialMensual?: MesStat[];
+  registrosAnio?: { fecha: string }[];
+  graduaciones?: Graduacion[];
+  anio?: number;
 };
 
 function DashboardUI({
   nombre, email, avatar, cinturon, grados,
   clasesCompletadas, clasesEsteMes, proximoPago,
   progreso, horario, fechaInicio, perfiles, perfilActual, historialMensual,
+  registrosAnio, graduaciones, anio,
 }: DashboardUIProps) {
   return (
     <div className="min-h-screen bg-black pt-24 pb-16">
@@ -207,6 +213,17 @@ function DashboardUI({
             <p className="text-xs text-gray-600 mt-2">
               Basado en ~{CLASES_PARA_NEXT[cinturon]} clases de referencia. El instructor decide la promoción.
             </p>
+          </div>
+        )}
+
+        {/* ─── Cartón de frecuencia anual ─────────────────────────────── */}
+        {registrosAnio && (
+          <div className="mb-8">
+            <AttendanceCalendar
+              registros={registrosAnio}
+              graduaciones={graduaciones ?? []}
+              anio={anio ?? new Date().getFullYear()}
+            />
           </div>
         )}
 
@@ -304,8 +321,11 @@ export default async function DashboardPage() {
     const horario = await horarioFallback();
     const progreso = getProgresoNivel(perfil.cinturon ?? "blanco", perfil.clasesCompletadas ?? 0);
 
-    // Historial de asistencia del hijo por alumnoId = perfilId
+    const anio = new Date().getFullYear();
     let historialMensual;
+    let registrosAnio: { fecha: string }[] = [];
+    const graduaciones: Graduacion[] = (perfil as any).historialGraduaciones ?? []; // eslint-disable-line
+
     try {
       const registros = await findByQuery<{ fecha: string }>(
         CONTAINERS.ASISTENCIA,
@@ -313,6 +333,7 @@ export default async function DashboardPage() {
         [{ name: "@id", value: perfil.id }]
       );
       historialMensual = getMonthlyStats(registros);
+      registrosAnio = registros.filter((r) => r.fecha.startsWith(String(anio)));
     } catch { /* omitir */ }
 
     return <DashboardUI
@@ -323,6 +344,7 @@ export default async function DashboardPage() {
       horario={horario} fechaInicio={perfil.fechaInicio}
       perfiles={perfiles} perfilActual={perfil}
       historialMensual={historialMensual}
+      registrosAnio={registrosAnio} graduaciones={graduaciones} anio={anio}
     />;
   }
 
@@ -358,8 +380,11 @@ export default async function DashboardPage() {
 
   const progreso = getProgresoNivel(cinturon, clasesCompletadas);
 
-  // Historial mensual para alumno normal por alumnoId = usuario.id
+  const anio = new Date().getFullYear();
   let historialMensual;
+  let registrosAnio: { fecha: string }[] = [];
+  const graduaciones: Graduacion[] = (usuario as any)?.historialGraduaciones ?? []; // eslint-disable-line
+
   try {
     if (usuario?.id) {
       const registros = await findByQuery<{ fecha: string }>(
@@ -368,6 +393,7 @@ export default async function DashboardPage() {
         [{ name: "@id", value: usuario.id }]
       );
       historialMensual = getMonthlyStats(registros);
+      registrosAnio = registros.filter((r) => r.fecha.startsWith(String(anio)));
     }
   } catch { /* omitir */ }
 
@@ -378,5 +404,6 @@ export default async function DashboardPage() {
     proximoPago={proximoPago} progreso={progreso}
     horario={horario} fechaInicio={usuario?.fechaInicio}
     historialMensual={historialMensual}
+    registrosAnio={registrosAnio} graduaciones={graduaciones} anio={anio}
   />;
 }

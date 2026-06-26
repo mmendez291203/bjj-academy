@@ -34,6 +34,7 @@ export type UsuarioAdmin = {
   clasesEsteMes?: number;
   proximoPago?: string | null;
   activo?: boolean;
+  historialGraduaciones?: { fecha: string; cinturonAnterior: string; gradosAnterior: number; cinturonNuevo: string; gradosNuevo: number }[];
   // Campos internos para perfiles de hijos (no se guardan en DB directamente)
   _tipo?: "perfil";
   _padreId?: string;
@@ -162,12 +163,31 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
     // Para perfiles de hijos: PATCH al padre con perfilId incluido
     const targetId = esPerfil ? (editando._padreId ?? editando.id) : editando.id;
     try {
+      const hayGraduacion =
+        form.cinturon !== (editando.cinturon ?? "blanco") ||
+        Number(form.grados) !== (editando.grados ?? 0);
+
       const body: Record<string, unknown> = {
         cinturon:          form.cinturon,
         grados:            Number(form.grados),
         clasesCompletadas: Number(form.clasesCompletadas),
         proximoPago:       form.proximoPago ? new Date(form.proximoPago + "T12:00:00").toISOString() : null,
       };
+
+      if (hayGraduacion) {
+        const hoy = new Date().toISOString().slice(0, 10);
+        const historialPrevio = editando.historialGraduaciones ?? [];
+        body.historialGraduaciones = [
+          ...historialPrevio,
+          {
+            fecha:            hoy,
+            cinturonAnterior: editando.cinturon ?? "blanco",
+            gradosAnterior:   editando.grados ?? 0,
+            cinturonNuevo:    form.cinturon,
+            gradosNuevo:      Number(form.grados),
+          },
+        ];
+      }
       if (esPerfil) {
         body.perfilId = editando._perfilId;
       } else {

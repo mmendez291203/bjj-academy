@@ -4,17 +4,26 @@ import { findByQuery, updateItem, deleteItem, CONTAINERS } from "@/lib/azure/cos
 import { z } from "zod";
 import type { PerfilHijo } from "@/types";
 
+const graduacionSchema = z.object({
+  fecha:            z.string(),
+  cinturonAnterior: z.string(),
+  gradosAnterior:   z.number(),
+  cinturonNuevo:    z.string(),
+  gradosNuevo:      z.number(),
+});
+
 const schema = z.object({
-  cinturon:          z.string().optional(),
-  grados:            z.number().min(0).max(4).optional(),
-  clasesCompletadas: z.number().min(0).optional(),
-  clasesEsteMes:     z.number().min(0).optional(),
-  proximoPago:       z.string().nullable().optional(),
-  activo:            z.boolean().optional(),
-  nombre:            z.string().optional(),
-  rol:               z.enum(["alumno", "instructor", "admin"]).optional(),
+  cinturon:               z.string().optional(),
+  grados:                 z.number().min(0).max(4).optional(),
+  clasesCompletadas:      z.number().min(0).optional(),
+  clasesEsteMes:          z.number().min(0).optional(),
+  proximoPago:            z.string().nullable().optional(),
+  activo:                 z.boolean().optional(),
+  nombre:                 z.string().optional(),
+  rol:                    z.enum(["alumno", "instructor", "admin"]).optional(),
+  historialGraduaciones:  z.array(graduacionSchema).optional(),
   // Para editar un perfil de hijo dentro de un padre
-  perfilId:          z.string().optional(),
+  perfilId:               z.string().optional(),
 });
 
 export async function PATCH(
