@@ -136,7 +136,17 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
   async function eliminar(u: UsuarioAdmin) {
     if (!confirm(`¿Eliminar a ${u.nombre ?? u.email}? Esta acción no se puede deshacer.`)) return;
     try {
-      const res = await fetch(`/api/admin/usuarios/${u.id}`, { method: "DELETE" });
+      let res: Response;
+      if (u._tipo === "perfil" && u._padreId && u._perfilId) {
+        // Perfiles de hijos: PATCH al padre eliminando el perfil del array
+        res = await fetch(`/api/admin/usuarios/${u._padreId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eliminarPerfilId: u._perfilId }),
+        });
+      } else {
+        res = await fetch(`/api/admin/usuarios/${u.id}`, { method: "DELETE" });
+      }
       if (res.ok) router.refresh();
       else {
         const data = await res.json();

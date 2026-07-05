@@ -24,6 +24,8 @@ const schema = z.object({
   historialGraduaciones:  z.array(graduacionSchema).optional(),
   // Para editar un perfil de hijo dentro de un padre
   perfilId:               z.string().optional(),
+  // Para eliminar un perfil de hijo
+  eliminarPerfilId:       z.string().optional(),
 });
 
 export async function PATCH(
@@ -43,9 +45,25 @@ export async function PATCH(
     return NextResponse.json({ error: "Datos inválidos", detail: result.error.message }, { status: 400 });
   }
 
-  const { perfilId, ...campos } = result.data;
+  const { perfilId, eliminarPerfilId, ...campos } = result.data;
 
   try {
+    // ── Eliminar perfil de hijo ────────────────────────────────────────────
+    if (eliminarPerfilId) {
+      const padres = await findByQuery<{ id: string; perfiles?: PerfilHijo[] }>(
+        CONTAINERS.USUARIOS,
+        "SELECT * FROM c WHERE c.id = @id",
+        [{ name: "@id", value: id }]
+      );
+      const padre = padres[0];
+      if (!padre) return NextResponse.json({ error: "Padre no encontrado" }, { status: 404 });
+
+      const perfiles = (padre.perfiles ?? []).filter((p) => p.id !== eliminarPerfilId);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updated = await updateItem(CONTAINERS.USUARIOS, id, { perfiles } as any);
+      return NextResponse.json({ success: true, data: updated });
+    }
+
     // ── Editar perfil de hijo (dentro de un documento padre) ───────────────
     if (perfilId) {
       const padres = await findByQuery<{ id: string; perfiles?: PerfilHijo[] }>(
