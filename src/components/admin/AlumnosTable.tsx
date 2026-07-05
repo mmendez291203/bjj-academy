@@ -77,6 +77,7 @@ function Grados({ n }: { n: number }) {
 export default function AlumnosTable({ usuarios, rolActual }: { usuarios: UsuarioAdmin[]; rolActual?: string }) {
   const router = useRouter();
   const esAdmin = rolActual === "admin";
+  const [busqueda, setBusqueda] = useState("");
   const [editando, setEditando] = useState<UsuarioAdmin | null>(null);
   const [form, setForm] = useState<FormState>({
     rol: "alumno", cinturon: "blanco", grados: 0, clasesCompletadas: 0,
@@ -231,8 +232,38 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
     }
   }
 
+  const filasFiltradas = busqueda.trim()
+    ? usuarios.filter((u) => {
+        const q = busqueda.toLowerCase();
+        return (u.nombre ?? "").toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+      })
+    : usuarios;
+
   return (
     <>
+      {/* ─── Buscador ──────────────────────────────────────────────────────── */}
+      <div className="relative mb-4">
+        <input
+          type="text"
+          placeholder="Buscar por nombre o email…"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          className="w-full bg-gray-950 border border-white/10 rounded-lg pl-4 pr-10 py-2.5 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/30"
+        />
+        {busqueda && (
+          <button onClick={() => setBusqueda("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white transition-colors text-xs">
+            ✕
+          </button>
+        )}
+        {busqueda && (
+          <p className="text-xs text-gray-500 mt-1.5">
+            {filasFiltradas.length === 0
+              ? "Ningún alumno coincide con esa búsqueda"
+              : `${filasFiltradas.length} alumno${filasFiltradas.length !== 1 ? "s" : ""} encontrado${filasFiltradas.length !== 1 ? "s" : ""}`}
+          </p>
+        )}
+      </div>
+
       {/* ─── Tabla ─────────────────────────────────────────────────────────── */}
       <div className="rounded-xl border border-white/5 overflow-hidden">
         <div className="overflow-x-auto">
@@ -250,7 +281,7 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
-            {usuarios.map((u) => (
+            {filasFiltradas.map((u) => (
               <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
                 <td className="px-4 py-3 text-white font-medium">
                   <div className="flex items-center gap-2">

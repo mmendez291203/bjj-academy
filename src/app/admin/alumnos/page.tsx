@@ -1,4 +1,4 @@
-import { findAll, CONTAINERS } from "@/lib/azure/cosmos";
+import { findAll, findByQuery, CONTAINERS } from "@/lib/azure/cosmos";
 import AlumnosTable, { type UsuarioAdmin } from "@/components/admin/AlumnosTable";
 import { auth } from "@/lib/auth";
 import type { PerfilHijo } from "@/types";
@@ -11,7 +11,24 @@ type PadreDoc = UsuarioAdmin & { perfiles?: PerfilHijo[] };
 export default async function AlumnosPage() {
   const session  = await auth() as any; // eslint-disable-line
   const rolActual: string = session?.user?.rol ?? "";
-  const docs = await findAll<PadreDoc>(CONTAINERS.USUARIOS).catch(() => []);
+
+  const ahora     = new Date();
+  const mesActual = `${ahora.getUTCFullYear()}-${String(ahora.getUTCMonth() + 1).padStart(2, "0")}`;
+
+  const [docs, asistenciaMes] = await Promise.all([
+    findAll<PadreDoc>(CONTAINERS.USUARIOS).catch(() => []),
+    findByQuery<{ alumnoId: string }>(
+      CONTAINERS.ASISTENCIA,
+      "SELECT c.alumnoId FROM c WHERE STARTSWITH(c.fecha, @mes)",
+      [{ name: "@mes", value: mesActual }]
+    ).catch(() => []),
+  ]);
+
+  // Conteo de clases por alumnoId en el mes actual
+  const conteoMes = new Map<string, number>();
+  for (const a of asistenciaMes) {
+    conteoMes.set(a.alumnoId, (conteoMes.get(a.alumnoId) ?? 0) + 1);
+  }
 
   // Expandir hijos de padres como filas separadas
   const filas: UsuarioAdmin[] = [];
@@ -26,6 +43,7 @@ export default async function AlumnosPage() {
           cinturon:          p.cinturon,
           grados:            p.grados,
           clasesCompletadas: p.clasesCompletadas,
+          clasesEsteMes:     conteoMes.get(p.id) ?? 0,
           proximoPago:       p.proximoPago,
           activo:            true,
           _tipo:             "perfil",
@@ -34,7 +52,7 @@ export default async function AlumnosPage() {
         } as UsuarioAdmin);
       }
     } else {
-      filas.push(u);
+      filas.push({ ...u, clasesEsteMes: conteoMes.get(u.id) ?? 0 });
     }
   }
 
