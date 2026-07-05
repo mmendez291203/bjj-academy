@@ -81,22 +81,35 @@ export async function POST(
     });
   }
 
-  // ── Adulto: activar cuenta normal ─────────────────────────────────────────
-  const usuarios = await findAll<{ id: string; email: string; activo?: boolean }>(CONTAINERS.USUARIOS);
-  const usuario  = usuarios.find((u) => u.email === inscripcion.email);
+  // ── Adulto: activar o crear cuenta ───────────────────────────────────────
+  const emailNorm = inscripcion.email.toLowerCase().trim();
+  const usuarios  = await findAll<{ id: string; email: string; activo?: boolean }>(CONTAINERS.USUARIOS);
+  const usuario   = usuarios.find((u) => u.email.toLowerCase().trim() === emailNorm);
 
   if (usuario) {
+    // Ya tiene cuenta → solo activar
     await updateItem(CONTAINERS.USUARIOS, usuario.id, { activo: true } as any); // eslint-disable-line
     return NextResponse.json({
       success: true,
-      activado: true,
       mensaje: `✅ Usuario activado. ${inscripcion.nombre} ya puede entrar al portal.`,
     });
   }
 
+  // No tiene cuenta → crearla ahora para que aparezca en el listado
+  const nombreCompleto = `${inscripcion.nombre}${inscripcion.apellido ? " " + inscripcion.apellido : ""}`.trim();
+  await createItem(CONTAINERS.USUARIOS, {
+    id:                `usr-${crypto.randomUUID()}`,
+    email:             emailNorm,
+    nombre:            nombreCompleto,
+    rol:               "alumno",
+    cinturon:          "blanco",
+    grados:            0,
+    clasesCompletadas: 0,
+    activo:            true,
+    creadoEn:          new Date().toISOString(),
+  });
   return NextResponse.json({
     success: true,
-    activado: false,
-    mensaje: `✅ Pre-aprobado. Cuando ${inscripcion.nombre} inicie sesión con Google, entrará activo automáticamente.`,
+    mensaje: `✅ Usuario creado. ${inscripcion.nombre} ya aparece en el listado y podrá entrar al portal.`,
   });
 }

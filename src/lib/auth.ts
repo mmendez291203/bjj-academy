@@ -72,7 +72,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               activo?: boolean;
             }>("usuarios");
 
-            const dbUser = usuarios.find((u) => u.email === user.email);
+            const emailLogin = (user.email ?? "").toLowerCase().trim();
+            const dbUser = usuarios.find((u) => u.email.toLowerCase().trim() === emailLogin);
 
             if (dbUser) {
               // Usuario existente → usar su rol y estado
@@ -82,14 +83,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               // Primera vez → verificar si fue pre-aprobado vía inscripción
               let preAprobado = false;
               try {
-                const inscrips = await findByQuery<{ id: string; estado?: string }>(
+                const inscrips = await findByQuery<{ id: string; email: string; estado?: string }>(
                   "inscripciones",
-                  "SELECT * FROM c WHERE c.email = @email AND c.estado = @estado",
-                  [
-                    { name: "@email",  value: user.email ?? "" },
-                    { name: "@estado", value: "admitido" },
-                  ]
-                );
+                  "SELECT * FROM c WHERE c.estado = @estado",
+                  [{ name: "@estado", value: "admitido" }]
+                ).then((r) => r.filter((i) => i.email?.toLowerCase().trim() === emailLogin));
                 preAprobado = inscrips.length > 0;
               } catch {
                 // Si falla la consulta, continúa con activo: false
