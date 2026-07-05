@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatFecha } from "@/lib/utils";
-import { CheckCircle, Clock, UserCheck, XCircle, Loader2, Eye, EyeOff, Baby } from "lucide-react";
+import { CheckCircle, Clock, UserCheck, XCircle, Loader2, Eye, EyeOff, Baby, RefreshCw } from "lucide-react";
 
 type Inscripcion = {
   id: string;
@@ -227,7 +227,17 @@ export default function InscripcionesPage() {
                             : "—"}
                         </td>
                         <td className="px-4 py-3">
-                          {procesada ? (
+                          {ins.estado === "admitido" ? (
+                            <button
+                              onClick={() => admitir(ins.id)}
+                              disabled={admitiendo === ins.id}
+                              title="Verificar que el usuario exista en el sistema (útil si el alumno no aparece en la lista)"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-400 hover:text-white text-xs font-medium transition-colors"
+                            >
+                              {admitiendo === ins.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                              Sincronizar
+                            </button>
+                          ) : ins.estado === "rechazado" ? (
                             <span className="text-xs text-gray-600 italic">—</span>
                           ) : (
                             <div className="flex items-center gap-2">
@@ -249,7 +259,7 @@ export default function InscripcionesPage() {
                               </button>
                             </div>
                           )}
-                        </td>
+                          </td>
                       </tr>
 
                       {feedback?.id === ins.id && (
