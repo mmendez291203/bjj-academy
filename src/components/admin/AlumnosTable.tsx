@@ -428,6 +428,7 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
                     registros={historial}
                     graduaciones={editando?.historialGraduaciones ?? []}
                     anio={new Date().getFullYear()}
+                    compact
                   />
                 )}
               </div>
