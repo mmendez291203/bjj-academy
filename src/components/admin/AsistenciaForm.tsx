@@ -7,7 +7,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CheckSquare, Square, Users, CheckCircle2, AlertCircle } from "lucide-react";
+import { CheckSquare, Square, Users, CheckCircle2, AlertCircle, Search } from "lucide-react";
 import { cn, colorCinturon, capitalizar } from "@/lib/utils";
 
 type Alumno = {
@@ -49,11 +49,16 @@ export default function AsistenciaForm({ alumnos, fechaHoy }: Props) {
   const [seleccion, setSeleccion] = useState<Set<string>>(new Set());
   const [resultado, setResultado] = useState<Resultado | null>(null);
   const [categoria, setCategoria] = useState<"adultos" | "kids">("adultos");
+  const [busqueda,  setBusqueda]  = useState("");
 
   const alumnosActivos = alumnos.filter((a) => a.activo !== false);
-  const alumnosFiltrados = alumnosActivos.filter((a) =>
-    categoria === "kids" ? !!a._perfilId : !a._perfilId
-  );
+  const alumnosFiltrados = alumnosActivos
+    .filter((a) => categoria === "kids" ? !!a._perfilId : !a._perfilId)
+    .filter((a) => {
+      if (!busqueda.trim()) return true;
+      const q = busqueda.toLowerCase();
+      return (a.nombre ?? a.email).toLowerCase().includes(q) || a.email.toLowerCase().includes(q);
+    });
 
   function toggleAlumno(id: string) {
     setSeleccion((prev) => {
@@ -121,7 +126,7 @@ export default function AsistenciaForm({ alumnos, fechaHoy }: Props) {
         {(["adultos", "kids"] as const).map((cat) => (
           <button
             key={cat}
-            onClick={() => { setCategoria(cat); setSeleccion(new Set()); setResultado(null); }}
+            onClick={() => { setCategoria(cat); setSeleccion(new Set()); setResultado(null); setBusqueda(""); }}
             className={cn(
               "flex-1 py-1.5 rounded-md text-xs font-semibold capitalize transition-all",
               categoria === cat ? "bg-gray-700 text-white" : "text-gray-500 hover:text-gray-300"
@@ -167,13 +172,30 @@ export default function AsistenciaForm({ alumnos, fechaHoy }: Props) {
           <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
             <Users className="w-3.5 h-3.5" />
             Alumnos presentes
+            {seleccion.size > 0 && (
+              <span className="bg-green-800 text-green-200 text-xs font-bold px-1.5 py-0.5 rounded-full">
+                {seleccion.size}
+              </span>
+            )}
           </label>
           <button
             onClick={toggleTodos}
             className="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors"
           >
-            {seleccion.size === alumnosFiltrados.length ? "Desmarcar todos" : "Marcar todos"}
+            {seleccion.size === alumnosFiltrados.length && alumnosFiltrados.length > 0 ? "Desmarcar todos" : "Marcar todos"}
           </button>
+        </div>
+
+        {/* Search */}
+        <div className="relative mb-3">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-600 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Buscar alumno…"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            className="w-full bg-gray-950 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-white/30"
+          />
         </div>
 
         <div className="space-y-2 max-h-80 overflow-y-auto pr-1">

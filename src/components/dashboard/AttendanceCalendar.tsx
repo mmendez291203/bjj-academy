@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { capitalizar } from "@/lib/utils";
 
 const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 const DIAS  = Array.from({ length: 31 }, (_, i) => i + 1);
 
-type Graduacion = { fecha: string; cinturonNuevo: string; gradosNuevo: number };
+type Graduacion = { fecha: string; cinturonAnterior: string; gradosAnterior: number; cinturonNuevo: string; gradosNuevo: number };
 
 type Props = {
   registros:    { fecha: string }[];
@@ -89,7 +90,14 @@ export default function AttendanceCalendar({ registros, graduaciones, anio: anio
                         {fuera ? (
                           <span className="text-gray-800">·</span>
                         ) : grad ? (
-                          <span title={`Graduación: ${grad.cinturonNuevo} ${grad.gradosNuevo}°`} className="text-yellow-400 text-sm leading-none">★</span>
+                          <span
+                            title={
+                              grad.cinturonAnterior !== grad.cinturonNuevo
+                                ? `Cinta: ${capitalizar(grad.cinturonAnterior)} → ${capitalizar(grad.cinturonNuevo)}`
+                                : `Grado: ${grad.gradosAnterior}° → ${grad.gradosNuevo}°`
+                            }
+                            className="text-yellow-400 text-sm leading-none"
+                          >★</span>
                         ) : asistio ? (
                           <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-500" />
                         ) : (

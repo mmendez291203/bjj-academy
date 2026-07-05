@@ -87,7 +87,7 @@ function StatCard({ icon: Icon, label, value, sub, color = "text-red-400" }: {
   );
 }
 
-type Graduacion = { fecha: string; cinturonNuevo: string; gradosNuevo: number };
+type Graduacion = { fecha: string; cinturonAnterior: string; gradosAnterior: number; cinturonNuevo: string; gradosNuevo: number };
 
 function proximoPagoActivo(fechaGuardada: string | null | undefined): string | null {
   if (!fechaGuardada) return null;

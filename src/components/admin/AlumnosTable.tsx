@@ -87,6 +87,7 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
   const [tab, setTab] = useState<"editar" | "historial">("editar");
   const [historial, setHistorial] = useState<AsistenciaRec[] | null>(null);
   const [cargandoHistorial, setCargandoHistorial] = useState(false);
+  const [eliminandoGrad, setEliminandoGrad] = useState<number | null>(null);
 
   function abrirModal(u: UsuarioAdmin) {
     setEditando(u);
@@ -201,6 +202,32 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
       setError("Error de conexión. Intente nuevamente.");
     } finally {
       setGuardando(false);
+    }
+  }
+
+  async function eliminarGraduacion(idx: number) {
+    if (!editando) return;
+    if (!confirm("¿Eliminar esta entrada del historial de graduaciones?")) return;
+    setEliminandoGrad(idx);
+    const nuevoHistorial = (editando.historialGraduaciones ?? []).filter((_, i) => i !== idx);
+    const targetId = editando._tipo === "perfil" ? (editando._padreId ?? editando.id) : editando.id;
+    const body: Record<string, unknown> = { historialGraduaciones: nuevoHistorial };
+    if (editando._tipo === "perfil") body.perfilId = editando._perfilId;
+    try {
+      const res = await fetch(`/api/admin/usuarios/${targetId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        setEditando((prev) => prev ? { ...prev, historialGraduaciones: nuevoHistorial } : null);
+      } else {
+        alert("Error al eliminar la graduación");
+      }
+    } catch {
+      alert("Error de conexión");
+    } finally {
+      setEliminandoGrad(null);
     }
   }
 
@@ -341,11 +368,61 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
 
             {/* ── Tab: Historial ───────────────────────────── */}
             {tab === "historial" && (
-              <div className="min-h-[200px]">
+              <div className="space-y-4 min-h-[200px]">
+
+                {/* Graduation history */}
+                {(editando?.historialGraduaciones ?? []).length > 0 ? (
+                  <div className="rounded-xl border border-white/5 bg-gray-950 p-4">
+                    <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                      <span className="text-yellow-400">★</span> Historial de graduaciones
+                    </h3>
+                    <div className="space-y-2">
+                      {editando!.historialGraduaciones!.map((g, i) => {
+                        const esCambioCinta = g.cinturonAnterior !== g.cinturonNuevo;
+                        return (
+                          <div key={i} className="flex items-center gap-2 p-2.5 rounded-lg bg-gray-900 border border-white/5">
+                            <span className={cn(
+                              "shrink-0 text-xs font-bold px-2 py-0.5 rounded-full",
+                              esCambioCinta ? "bg-yellow-900/30 text-yellow-400" : "bg-blue-900/30 text-blue-400"
+                            )}>
+                              {esCambioCinta ? "Cinta" : "Grado"}
+                            </span>
+                            <div className="flex-1 flex items-center gap-1.5 min-w-0 flex-wrap">
+                              <span className={cn("text-xs font-bold px-2 py-0.5 rounded-full", colorCinturon(g.cinturonAnterior))}>
+                                {capitalizar(g.cinturonAnterior)}
+                              </span>
+                              <span className="text-gray-700 text-xs font-mono">{"●".repeat(g.gradosAnterior)}</span>
+                              <span className="text-gray-600 text-xs">→</span>
+                              <span className={cn("text-xs font-bold px-2 py-0.5 rounded-full", colorCinturon(g.cinturonNuevo))}>
+                                {capitalizar(g.cinturonNuevo)}
+                              </span>
+                              <span className="text-yellow-400 text-xs font-mono">{"●".repeat(g.gradosNuevo)}</span>
+                            </div>
+                            <span className="text-xs text-gray-600 shrink-0 whitespace-nowrap">
+                              {new Date(g.fecha + "T12:00:00").toLocaleDateString("es-CR", { day: "2-digit", month: "short", year: "2-digit" })}
+                            </span>
+                            <button
+                              onClick={() => eliminarGraduacion(i)}
+                              disabled={eliminandoGrad === i}
+                              className="text-gray-700 hover:text-red-400 transition-colors shrink-0 disabled:opacity-50"
+                              title="Eliminar esta graduación"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-600 text-center py-2">Sin graduaciones registradas.</p>
+                )}
+
+                {/* Attendance calendar */}
                 {cargandoHistorial ? (
-                  <p className="text-sm text-gray-500 text-center py-10">Cargando historial…</p>
+                  <p className="text-sm text-gray-500 text-center py-10">Cargando asistencia…</p>
                 ) : historial === null ? null : historial.length === 0 ? (
-                  <p className="text-sm text-gray-600 text-center py-10">Sin registros de asistencia.</p>
+                  <p className="text-sm text-gray-600 text-center py-4">Sin registros de asistencia.</p>
                 ) : (
                   <AttendanceCalendar
                     registros={historial}
