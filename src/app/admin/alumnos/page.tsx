@@ -30,10 +30,15 @@ export default async function AlumnosPage() {
     conteoMes.set(a.alumnoId, (conteoMes.get(a.alumnoId) ?? 0) + 1);
   }
 
-  // Expandir hijos de padres como filas separadas
+  // Expandir hijos de padres como filas separadas; el padre también aparece como alumno
   const filas: UsuarioAdmin[] = [];
   for (const u of docs) {
-    if (u.rol === "padre" && u.perfiles?.length) {
+    // Agregar el usuario como su propia fila (padres solo si también entrenan BJJ)
+    if (u.rol !== "padre" || (u as any).esAlumno) {
+      filas.push({ ...u, clasesEsteMes: conteoMes.get(u.id) ?? 0 });
+    }
+    // Si tiene hijos, agregar también cada perfil como fila separada
+    if (u.perfiles?.length) {
       for (const p of u.perfiles) {
         filas.push({
           id:                p.id,
@@ -46,13 +51,12 @@ export default async function AlumnosPage() {
           clasesEsteMes:     conteoMes.get(p.id) ?? 0,
           proximoPago:       p.proximoPago,
           activo:            true,
+          historialGraduaciones: (p as any).historialGraduaciones,
           _tipo:             "perfil",
           _padreId:          u.id,
           _perfilId:         p.id,
         } as UsuarioAdmin);
       }
-    } else {
-      filas.push({ ...u, clasesEsteMes: conteoMes.get(u.id) ?? 0 });
     }
   }
 

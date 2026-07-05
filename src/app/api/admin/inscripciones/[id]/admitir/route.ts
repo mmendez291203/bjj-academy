@@ -87,8 +87,9 @@ export async function POST(
   const usuario   = usuarios.find((u) => u.email.toLowerCase().trim() === emailNorm);
 
   if (usuario) {
-    // Ya tiene cuenta → solo activar
-    await updateItem(CONTAINERS.USUARIOS, usuario.id, { activo: true } as any); // eslint-disable-line
+    // Ya tiene cuenta → activar; si es padre que también entrena, marcarlo
+    const extra = (usuario as any).rol === "padre" ? { esAlumno: true } : {};
+    await updateItem(CONTAINERS.USUARIOS, usuario.id, { activo: true, ...extra } as any); // eslint-disable-line
     return NextResponse.json({
       success: true,
       mensaje: `✅ Usuario activado. ${inscripcion.nombre} ya puede entrar al portal.`,
