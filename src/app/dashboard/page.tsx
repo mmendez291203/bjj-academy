@@ -318,7 +318,7 @@ export default async function DashboardPage() {
     } catch { /* omitir */ }
 
     return <DashboardUI
-      nombre={perfil.nombre} email={email} avatar={avatar}
+      nombre={perfil.nombre} email={email} avatar={(perfil as any).foto ?? avatar}
       cinturon={perfil.cinturon ?? "blanco"} grados={perfil.grados ?? 0}
       clasesCompletadas={perfil.clasesCompletadas ?? 0} clasesEsteMes={0}
       proximoPago={proximoPagoActivo(perfil.proximoPago)} progreso={progreso}
@@ -377,7 +377,7 @@ export default async function DashboardPage() {
   } catch { /* omitir */ }
 
   return <DashboardUI
-    nombre={nombre} email={email} avatar={avatar}
+    nombre={nombre} email={email} avatar={(usuario as any)?.foto ?? avatar}
     cinturon={cinturon} grados={grados}
     clasesCompletadas={clasesCompletadas} clasesEsteMes={clasesEsteMes}
     proximoPago={proximoPago} progreso={progreso}

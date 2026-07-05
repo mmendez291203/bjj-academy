@@ -22,6 +22,9 @@ const schema = z.object({
   nombre:                 z.string().optional(),
   rol:                    z.enum(["alumno", "instructor", "admin"]).optional(),
   historialGraduaciones:  z.array(graduacionSchema).optional(),
+  fechaInicio:            z.string().nullable().optional(),
+  cumpleanos:             z.string().nullable().optional(),
+  foto:                   z.string().nullable().optional(),
   // Para editar un perfil de hijo dentro de un padre
   perfilId:               z.string().optional(),
   // Para eliminar un perfil de hijo

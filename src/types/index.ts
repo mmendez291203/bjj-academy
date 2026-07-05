@@ -22,6 +22,8 @@ export type PerfilHijo = {
   clasesCompletadas: number;
   fechaInicio?: string;
   proximoPago?: string | null;
+  cumpleanos?: string;
+  foto?: string;
 };
 
 export type Galón = 0 | 1 | 2 | 3 | 4;

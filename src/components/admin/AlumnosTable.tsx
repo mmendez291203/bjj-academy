@@ -5,7 +5,7 @@
  * Componente cliente — maneja estado del modal y llama a la API.
  */
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { X, Trash2, Baby, CalendarDays } from "lucide-react";
 import { cn, colorCinturon, capitalizar } from "@/lib/utils";
@@ -24,6 +24,9 @@ export type UsuarioAdmin = {
   clasesEsteMes?: number;
   proximoPago?: string | null;
   activo?: boolean;
+  fechaInicio?: string;
+  cumpleanos?: string;
+  foto?: string;
   historialGraduaciones?: { fecha: string; cinturonAnterior: string; gradosAnterior: number; cinturonNuevo: string; gradosNuevo: number }[];
   // Campos internos para perfiles de hijos (no se guardan en DB directamente)
   _tipo?: "perfil";
@@ -39,6 +42,9 @@ type FormState = {
   clasesEsteMes: number;
   proximoPago: string;
   activo: boolean;
+  fechaInicio: string;
+  cumpleanos: string;
+  foto: string;
 };
 
 const CINTURONES: { value: string; label: string; grupo: string }[] = [
@@ -82,13 +88,49 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
   const [form, setForm] = useState<FormState>({
     rol: "alumno", cinturon: "blanco", grados: 0, clasesCompletadas: 0,
     clasesEsteMes: 0, proximoPago: "", activo: true,
+    fechaInicio: "", cumpleanos: "", foto: "",
   });
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
   const [tab, setTab] = useState<"editar" | "historial">("editar");
+  const fotoInputRef = useRef<HTMLInputElement>(null);
   const [historial, setHistorial] = useState<AsistenciaRec[] | null>(null);
   const [cargandoHistorial, setCargandoHistorial] = useState(false);
   const [eliminandoGrad, setEliminandoGrad] = useState<number | null>(null);
+
+  function comprimirImagen(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const MAX = 200;
+          const ratio = Math.min(MAX / img.width, MAX / img.height);
+          const canvas = document.createElement("canvas");
+          canvas.width  = Math.round(img.width  * ratio);
+          canvas.height = Math.round(img.height * ratio);
+          canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL("image/jpeg", 0.75));
+        };
+        img.onerror = reject;
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function onFotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const compressed = await comprimirImagen(file);
+      setForm((f) => ({ ...f, foto: compressed }));
+    } catch {
+      alert("Error procesando la imagen");
+    }
+    e.target.value = "";
+  }
 
   function abrirModal(u: UsuarioAdmin) {
     setEditando(u);
@@ -100,6 +142,9 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
       clasesEsteMes:     u.clasesEsteMes     ?? 0,
       proximoPago:       u.proximoPago       ? u.proximoPago.slice(0, 10) : "",
       activo:            u.activo !== false,
+      fechaInicio:       u.fechaInicio       ? u.fechaInicio.slice(0, 10) : "",
+      cumpleanos:        u.cumpleanos        ? u.cumpleanos.slice(0, 10) : "",
+      foto:              u.foto              ?? "",
     });
     setError("");
     setTab("editar");
@@ -174,6 +219,9 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
         grados:            Number(form.grados),
         clasesCompletadas: Number(form.clasesCompletadas),
         proximoPago:       form.proximoPago ? new Date(form.proximoPago + "T12:00:00").toISOString() : null,
+        fechaInicio:       form.fechaInicio || null,
+        cumpleanos:        form.cumpleanos  || null,
+        foto:              form.foto        || null,
       };
 
       if (hayGraduacion) {
@@ -294,13 +342,22 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
             {filasFiltradas.map((u) => (
               <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
                 <td className="px-4 py-3 text-white font-medium">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2.5">
+                    {u.foto ? (
+                      <img src={u.foto} alt={u.nombre} className="w-8 h-8 rounded-full object-cover shrink-0 border border-white/10" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-gray-800 border border-white/10 flex items-center justify-center text-xs font-bold text-gray-500 shrink-0">
+                        {(u.nombre ?? u.email).charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div>
                     {u.nombre ?? "—"}
                     {u._tipo === "perfil" && (
                       <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-purple-900/40 text-purple-400 border border-purple-800/40">
                         <Baby className="w-3 h-3" /> Kids
                       </span>
                     )}
+                    </div>
                   </div>
                 </td>
                 <td className="px-4 py-3 text-gray-400 text-xs">
@@ -577,6 +634,57 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
                   onChange={(e) => setForm((f) => ({ ...f, proximoPago: e.target.value }))}
                   className="w-full bg-gray-950 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-white/30 [color-scheme:dark]"
                 />
+              </div>
+
+              {/* Foto de perfil */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                  Foto de perfil
+                </label>
+                <div className="flex items-center gap-3">
+                  {form.foto ? (
+                    <img src={form.foto} alt="foto" className="w-14 h-14 rounded-full object-cover border border-white/10 shrink-0" />
+                  ) : (
+                    <div className="w-14 h-14 rounded-full bg-gray-800 border border-white/10 flex items-center justify-center text-lg font-bold text-gray-600 shrink-0">
+                      {(editando?.nombre ?? editando?.email ?? "?").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-1.5">
+                    <button type="button" onClick={() => fotoInputRef.current?.click()}
+                      className="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors text-left">
+                      Subir foto
+                    </button>
+                    {form.foto && (
+                      <button type="button" onClick={() => setForm((f) => ({ ...f, foto: "" }))}
+                        className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors text-left">
+                        Eliminar foto
+                      </button>
+                    )}
+                  </div>
+                  <input ref={fotoInputRef} type="file" accept="image/*" className="hidden" onChange={onFotoChange} />
+                </div>
+              </div>
+
+              {/* Fecha de inicio y cumpleaños */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">
+                    Fecha de inicio
+                  </label>
+                  <input type="date" value={form.fechaInicio}
+                    onChange={(e) => setForm((f) => ({ ...f, fechaInicio: e.target.value }))}
+                    className="w-full bg-gray-950 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-white/30 [color-scheme:dark]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">
+                    Cumpleaños
+                  </label>
+                  <input type="date" value={form.cumpleanos}
+                    onChange={(e) => setForm((f) => ({ ...f, cumpleanos: e.target.value }))}
+                    className="w-full bg-gray-950 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-white/30 [color-scheme:dark]"
+                  />
+                </div>
               </div>
 
               {/* Activo toggle — solo alumnos normales */}
