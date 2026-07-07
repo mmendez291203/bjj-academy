@@ -28,7 +28,9 @@ type UsuarioDB = {
   clasesEsteMes?: number;
   proximoPago?: string | null;
   fechaInicio?: string;
+  cumpleanos?: string;
   activo?: boolean;
+  foto?: string;
 };
 
 const BELT_ORDER = [
@@ -123,6 +125,7 @@ type DashboardUIProps = {
   progreso: ReturnType<typeof getProgresoNivel>;
   horario: Clase[];
   fechaInicio?: string;
+  cumpleanos?: string;
   perfiles?: PerfilHijo[];
   perfilActual?: PerfilHijo;
   registrosAnio?: { fecha: string }[];
@@ -133,7 +136,7 @@ type DashboardUIProps = {
 function DashboardUI({
   nombre, email, avatar, cinturon, grados,
   clasesCompletadas, clasesEsteMes, proximoPago,
-  progreso, horario, fechaInicio, perfiles, perfilActual,
+  progreso, horario, fechaInicio, cumpleanos, perfiles, perfilActual,
   registrosAnio, graduaciones, anio,
 }: DashboardUIProps) {
   return (
@@ -184,6 +187,26 @@ function DashboardUI({
                 </span>
                 <span className="text-xs text-gray-600">{grados} de 4 grados</span>
               </div>
+              {(fechaInicio || cumpleanos) && (
+                <div className="flex items-center gap-3 mt-2 flex-wrap">
+                  {fechaInicio && (
+                    <span className="text-xs text-gray-500 flex items-center gap-1">
+                      📅 Miembro desde{" "}
+                      <span className="text-gray-300 font-medium">
+                        {new Date(fechaInicio + "T12:00:00").toLocaleDateString("es-CR", { day: "numeric", month: "long", year: "numeric" })}
+                      </span>
+                    </span>
+                  )}
+                  {cumpleanos && (
+                    <span className="text-xs text-gray-500 flex items-center gap-1">
+                      🎂{" "}
+                      <span className="text-gray-300 font-medium">
+                        {new Date(cumpleanos + "T12:00:00").toLocaleDateString("es-CR", { day: "numeric", month: "long" })}
+                      </span>
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
           <SignOutButton />
@@ -322,7 +345,7 @@ export default async function DashboardPage() {
       cinturon={perfil.cinturon ?? "blanco"} grados={perfil.grados ?? 0}
       clasesCompletadas={perfil.clasesCompletadas ?? 0} clasesEsteMes={0}
       proximoPago={proximoPagoActivo(perfil.proximoPago)} progreso={progreso}
-      horario={horario} fechaInicio={perfil.fechaInicio}
+      horario={horario} fechaInicio={perfil.fechaInicio} cumpleanos={perfil.cumpleanos}
       perfiles={perfiles} perfilActual={perfil}
       registrosAnio={registrosAnio} graduaciones={graduaciones} anio={anio}
     />;
@@ -377,11 +400,11 @@ export default async function DashboardPage() {
   } catch { /* omitir */ }
 
   return <DashboardUI
-    nombre={nombre} email={email} avatar={(usuario as any)?.foto ?? avatar}
+    nombre={nombre} email={email} avatar={usuario?.foto ?? avatar}
     cinturon={cinturon} grados={grados}
     clasesCompletadas={clasesCompletadas} clasesEsteMes={clasesEsteMes}
     proximoPago={proximoPago} progreso={progreso}
-    horario={horario} fechaInicio={usuario?.fechaInicio}
+    horario={horario} fechaInicio={usuario?.fechaInicio} cumpleanos={usuario?.cumpleanos}
     registrosAnio={registrosAnio} graduaciones={graduaciones} anio={anio}
   />;
 }

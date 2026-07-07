@@ -241,7 +241,8 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
       if (esPerfil) {
         body.perfilId = editando._perfilId;
       } else {
-        body.rol          = form.rol;
+        // No cambiar el rol si es padre (tiene perfiles de hijos asociados)
+        if (editando.rol !== "padre") body.rol = form.rol;
         body.clasesEsteMes = Number(form.clasesEsteMes);
         body.activo       = form.activo;
       }
@@ -534,8 +535,8 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
 
             {/* ── Tab: Editar ──────────────────────────────── */}
             {tab === "editar" && <div className="space-y-4">
-              {/* Rol — solo para alumnos normales */}
-              {editando._tipo !== "perfil" && (
+              {/* Rol — solo para alumnos normales (no para padres ni perfiles) */}
+              {editando._tipo !== "perfil" && editando.rol !== "padre" && (
               <div>
                 <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">
                   Rol en el sistema
@@ -552,6 +553,15 @@ export default function AlumnosTable({ usuarios, rolActual }: { usuarios: Usuari
                 <p className="text-xs text-gray-600 mt-1.5">
                   ⚠️ El cambio aplica la próxima vez que el usuario cierre e inicie sesión.
                 </p>
+              </div>
+              )}
+              {editando._tipo !== "perfil" && editando.rol === "padre" && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-purple-900/20 border border-purple-800/30">
+                <Baby className="w-4 h-4 text-purple-400 shrink-0" />
+                <div>
+                  <p className="text-xs font-semibold text-purple-300">Padre / Alumno</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Este usuario entrena y además tiene hijos inscritos. El rol no se puede cambiar desde aquí.</p>
+                </div>
               </div>
               )}
 
