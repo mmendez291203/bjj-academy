@@ -47,7 +47,12 @@ export default async function AsistenciaPage() {
   // Expandir padres en filas individuales por hijo
   const alumnos: Alumno[] = [];
   for (const u of todosUsuarios) {
-    if (u.rol === "padre" && u.perfiles?.length) {
+    // Si es padre que también entrena (esAlumno), añadirlo como adulto
+    if (u.rol !== "padre" || (u as any).esAlumno) {
+      alumnos.push(u);
+    }
+    // Expandir perfiles de hijos como filas kids
+    if (u.perfiles?.length) {
       for (const p of u.perfiles) {
         alumnos.push({
           id:        p.id,
@@ -60,8 +65,6 @@ export default async function AsistenciaPage() {
           _perfilId: p.id,
         });
       }
-    } else {
-      alumnos.push(u);
     }
   }
 
